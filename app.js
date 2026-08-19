@@ -44,12 +44,17 @@ async function cargarDatos() {
     let htmlOpciones = '<option value="">Selecciona un folio...</option>';
 
     viajesData.forEach(v => {
+        let fCliente = v.fechaCliente ? v.fechaCliente : '';
+        let fProv = v.fechaProveedor ? v.fechaProveedor : '';
+
         htmlTabla += `
             <tr class="clickable-row" ondblclick="verHistorial('${v.folio}')">
                 <td>${v.folio}</td><td>${v.cliente}</td><td>${v.destino}</td>
                 <td>$${v.totalViaje}</td>
                 <td class="text-danger fw-bold">$${v.faltaPagar}</td>
                 <td class="text-warning fw-bold">$${v.saldoProveedor}</td>
+                <td>${fCliente}</td>
+                <td>${fProv}</td>
             </tr>`;
         htmlOpciones += `<option value="${v.folio}">${v.folio} - ${v.cliente}</option>`;
     });
@@ -73,9 +78,16 @@ async function verHistorial(folio) {
         html = '<li class="list-group-item text-muted">No hay pagos registrados aún.</li>';
     } else {
         data.data.forEach(pago => {
+            let colorBadge = pago.tipo === 'Cliente' ? 'bg-success' : 'bg-warning text-dark';
+            let etiquetaTipo = pago.tipo === 'Cliente' ? 'bg-primary' : 'bg-secondary';
+            let signo = pago.tipo === 'Cliente' ? '+' : '-';
+            
             html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                <div><strong>${pago.concepto}</strong><br><small>${pago.fecha} | ${pago.metodo}</small></div>
-                <span class="badge bg-success rounded-pill">+$${pago.monto}</span>
+                <div>
+                    <strong>${pago.concepto}</strong> <span class="badge ${etiquetaTipo} ms-1">${pago.tipo}</span><br>
+                    <small>${pago.fecha} | ${pago.metodo}</small>
+                </div>
+                <span class="badge ${colorBadge} rounded-pill">${signo}$${pago.monto}</span>
             </li>`;
         });
     }
@@ -106,7 +118,7 @@ async function guardarNuevoViaje(e) {
     };
     await enviarPost('nuevoViaje', payload);
     alert('Viaje guardado');
-    location.reload(); // Recarga para actualizar tablas
+    location.reload(); 
 }
 
 async function guardarPagoCliente(e) {
