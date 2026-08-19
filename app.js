@@ -29,10 +29,42 @@ async function cargarDatos() {
     const resResumen = await fetch(`${API_URL}?action=getResumen`);
     const dataResumen = await resResumen.json();
     document.getElementById('dashboard-resumen').innerHTML = `
-        <div class="col-md-3"><div class="card bg-info text-white p-3"><h5>Ventas Totales</h5><h3>$${dataResumen.ventas}</h3></div></div>
-        <div class="col-md-3"><div class="card bg-success text-white p-3"><h5>Cobrado a Clientes</h5><h3>$${dataResumen.recibido}</h3></div></div>
-        <div class="col-md-3"><div class="card bg-warning text-dark p-3"><h5>Pagado a Prov.</h5><h3>$${dataResumen.pagado}</h3></div></div>
-        <div class="col-md-3"><div class="card bg-primary text-white p-3"><h5>Retenido (Caja)</h5><h3>$${dataResumen.retenido}</h3></div></div>
+        <div class="col-md-3 mb-3">
+            <div class="card card-resumen bg-white p-4 h-100 border-start border-4 border-info">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="text-muted mb-0 fw-bold">VENTAS TOTALES</h6>
+                    <i class="bi bi-graph-up-arrow text-info icon-large"></i>
+                </div>
+                <h3 class="fw-bold text-dark text-start mb-0">$${dataResumen.ventas}</h3>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card card-resumen bg-white p-4 h-100 border-start border-4 border-success">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="text-muted mb-0 fw-bold">COBRADO</h6>
+                    <i class="bi bi-wallet2 text-success icon-large"></i>
+                </div>
+                <h3 class="fw-bold text-dark text-start mb-0">$${dataResumen.recibido}</h3>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card card-resumen bg-white p-4 h-100 border-start border-4 border-warning">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="text-muted mb-0 fw-bold">PAGADO A PROV.</h6>
+                    <i class="bi bi-send-check text-warning icon-large"></i>
+                </div>
+                <h3 class="fw-bold text-dark text-start mb-0">$${dataResumen.pagado}</h3>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card card-resumen bg-white p-4 h-100 border-start border-4 border-primary">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="text-muted mb-0 fw-bold">EN CAJA (RETENIDO)</h6>
+                    <i class="bi bi-safe text-primary icon-large"></i>
+                </div>
+                <h3 class="fw-bold text-dark text-start mb-0">$${dataResumen.retenido}</h3>
+            </div>
+        </div>
     `;
 
     // Cargar Viajes
@@ -44,17 +76,19 @@ async function cargarDatos() {
     let htmlOpciones = '<option value="">Selecciona un folio...</option>';
 
     viajesData.forEach(v => {
-        let fCliente = v.fechaCliente ? v.fechaCliente : '';
-        let fProv = v.fechaProveedor ? v.fechaProveedor : '';
+        let fCliente = v.fechaCliente ? v.fechaCliente : '-';
+        let fProv = v.fechaProveedor ? v.fechaProveedor : '-';
 
         htmlTabla += `
             <tr class="clickable-row" ondblclick="verHistorial('${v.folio}')">
-                <td>${v.folio}</td><td>${v.cliente}</td><td>${v.destino}</td>
-                <td>$${v.totalViaje}</td>
+                <td class="fw-bold text-primary">${v.folio}</td>
+                <td class="fw-semibold">${v.cliente}</td>
+                <td><i class="bi bi-geo-alt text-danger me-1"></i>${v.destino}</td>
+                <td class="text-secondary">$${v.totalViaje}</td>
                 <td class="text-danger fw-bold">$${v.faltaPagar}</td>
                 <td class="text-warning fw-bold">$${v.saldoProveedor}</td>
-                <td>${fCliente}</td>
-                <td>${fProv}</td>
+                <td class="small text-muted"><i class="bi bi-calendar3 me-1"></i>${fCliente}</td>
+                <td class="small text-muted"><i class="bi bi-calendar3 me-1"></i>${fProv}</td>
             </tr>`;
         htmlOpciones += `<option value="${v.folio}">${v.folio} - ${v.cliente}</option>`;
     });
@@ -68,26 +102,30 @@ async function verHistorial(folio) {
     const modal = new bootstrap.Modal(document.getElementById('modalHistorial'));
     modal.show();
 
-    document.getElementById('lista-historial').innerHTML = '<li class="list-group-item">Cargando...</li>';
+    document.getElementById('lista-historial').innerHTML = '<li class="list-group-item p-4 text-center"><div class="spinner-border text-primary" role="status"></div><br>Cargando movimientos...</li>';
     
     const res = await fetch(`${API_URL}?action=getHistorial&id=${folio}`);
     const data = await res.json();
     
     let html = '';
     if(data.data.length === 0) {
-        html = '<li class="list-group-item text-muted">No hay pagos registrados aún.</li>';
+        html = '<li class="list-group-item p-4 text-center text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>No hay movimientos registrados.</li>';
     } else {
         data.data.forEach(pago => {
-            let colorBadge = pago.tipo === 'Cliente' ? 'bg-success' : 'bg-warning text-dark';
-            let etiquetaTipo = pago.tipo === 'Cliente' ? 'bg-primary' : 'bg-secondary';
-            let signo = pago.tipo === 'Cliente' ? '+' : '-';
+            let esCliente = pago.tipo === 'Cliente';
+            let colorMonto = esCliente ? 'text-success' : 'text-warning';
+            let etiquetaIcono = esCliente ? 'bi-person-down text-success' : 'bi-building-up text-warning';
+            let bgEtiqueta = esCliente ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-dark';
+            let signo = esCliente ? '+' : '-';
             
-            html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+            html += `
+            <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
                 <div>
-                    <strong>${pago.concepto}</strong> <span class="badge ${etiquetaTipo} ms-1">${pago.tipo}</span><br>
-                    <small>${pago.fecha} | ${pago.metodo}</small>
+                    <strong class="d-block text-dark">${pago.concepto}</strong>
+                    <span class="badge ${bgEtiqueta} border-0 mb-1 rounded-pill"><i class="bi ${etiquetaIcono} me-1"></i>${pago.tipo}</span>
+                    <br><small class="text-muted"><i class="bi bi-calendar me-1"></i>${pago.fecha} &bull; <i class="bi bi-credit-card me-1"></i>${pago.metodo}</small>
                 </div>
-                <span class="badge ${colorBadge} rounded-pill">${signo}$${pago.monto}</span>
+                <h5 class="mb-0 fw-bold ${colorMonto}">${signo}$${pago.monto}</h5>
             </li>`;
         });
     }
@@ -98,7 +136,7 @@ async function verHistorial(folio) {
 async function enviarPost(action, payload) {
     const response = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain' }, // Evita errores CORS en Apps Script
+        headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({ action: action, payload: payload })
     });
     return response.json();
@@ -117,7 +155,7 @@ async function guardarNuevoViaje(e) {
         fechaProveedor: document.getElementById('vFechaP').value
     };
     await enviarPost('nuevoViaje', payload);
-    alert('Viaje guardado');
+    alert('Viaje aperturado con éxito.');
     location.reload(); 
 }
 
@@ -131,7 +169,7 @@ async function guardarPagoCliente(e) {
         metodo: document.getElementById('cobroMetodo').value
     };
     await enviarPost('pagoCliente', payload);
-    alert('Pago de cliente registrado');
+    alert('Cobro a cliente registrado correctamente.');
     location.reload();
 }
 
@@ -145,6 +183,6 @@ async function guardarPagoProveedor(e) {
         metodo: document.getElementById('provMetodo').value
     };
     await enviarPost('pagoProveedor', payload);
-    alert('Pago a proveedor registrado');
+    alert('Pago a proveedor registrado correctamente.');
     location.reload();
 }
