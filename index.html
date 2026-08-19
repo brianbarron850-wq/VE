@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Control de Viajes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .card { box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .clickable-row { cursor: pointer; transition: background-color 0.2s; }
+        .clickable-row:hover { background-color: #e9ecef; }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Dashboard Financiero de Viajes</h2>
+    
+    <!-- Resumen -->
+    <div class="row text-center mb-4" id="dashboard-resumen">
+        <!-- Se llena con JS -->
+    </div>
+
+    <!-- Pestañas de Navegación -->
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#viajes" type="button" role="tab">Control de Pagos (Viajes)</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#cobrar" type="button" role="tab">Recibir Pago (Cliente)</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pagar" type="button" role="tab">Pagar (Proveedor)</button>
+      </li>
+    </ul>
+
+    <div class="tab-content bg-white p-4 border border-top-0 mb-5">
+        
+        <!-- Pestaña: Control de Pagos -->
+        <div class="tab-pane fade show active" id="viajes" role="tabpanel">
+            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#modalNuevoViaje">+ Nuevo Viaje</button>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Folio</th><th>Cliente</th><th>Destino</th><th>Total Viaje</th><th>Falta Cliente</th><th>Saldo Proveedor</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-viajes">
+                        <!-- Se llena con JS -->
+                    </tbody>
+                </table>
+                <small class="text-muted">* Da doble clic en una fila para ver el historial de pagos del cliente.</small>
+            </div>
+        </div>
+
+        <!-- Pestaña: Cobrar Cliente -->
+        <div class="tab-pane fade" id="cobrar" role="tabpanel">
+            <h4>Registrar Pago de Cliente</h4>
+            <form id="formCobro" class="row g-3 mt-2">
+                <div class="col-md-4">
+                    <label>Folio del Viaje</label>
+                    <select class="form-select select-folios" id="cobroFolio" required></select>
+                </div>
+                <div class="col-md-4">
+                    <label>Nombre del Cliente</label>
+                    <input type="text" class="form-control" id="cobroCliente" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label>Monto Recibido</label>
+                    <input type="number" class="form-control" id="cobroMonto" required>
+                </div>
+                <div class="col-md-6">
+                    <label>Concepto</label>
+                    <input type="text" class="form-control" id="cobroConcepto" placeholder="Ej. Anticipo" required>
+                </div>
+                <div class="col-md-6">
+                    <label>Método de Pago</label>
+                    <select class="form-select" id="cobroMetodo">
+                        <option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-success">Registrar Pago</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Pestaña: Pagar Proveedor -->
+        <div class="tab-pane fade" id="pagar" role="tabpanel">
+            <h4>Registrar Pago a Proveedor</h4>
+            <form id="formPagoProv" class="row g-3 mt-2">
+                <div class="col-md-4">
+                    <label>Folio del Viaje</label>
+                    <select class="form-select select-folios" id="provFolio" required></select>
+                </div>
+                <div class="col-md-4">
+                    <label>Nombre del Cliente (Ref)</label>
+                    <input type="text" class="form-control" id="provCliente" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label>Monto a Pagar</label>
+                    <input type="number" class="form-control" id="provMonto" required>
+                </div>
+                <div class="col-md-6">
+                    <label>Concepto</label>
+                    <input type="text" class="form-control" id="provConcepto" required>
+                </div>
+                <div class="col-md-6">
+                    <label>Método de Pago</label>
+                    <select class="form-select" id="provMetodo">
+                        <option>Transferencia</option><option>Efectivo</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-warning">Registrar Pago a Proveedor</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Nuevo Viaje -->
+<div class="modal fade" id="modalNuevoViaje" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Registrar Nuevo Viaje</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formNuevoViaje" class="row g-3">
+            <div class="col-md-4"><label>ID/Folio</label><input type="text" id="vFolio" class="form-control" required></div>
+            <div class="col-md-8"><label>Cliente</label><input type="text" id="vCliente" class="form-control" required></div>
+            <div class="col-md-6"><label>Destino/Viaje</label><input type="text" id="vDestino" class="form-control" required></div>
+            <div class="col-md-6"><label>Proveedor</label><input type="text" id="vProveedor" class="form-control" required></div>
+            <div class="col-md-6"><label>Total del Viaje (Cobro)</label><input type="number" id="vTotal" class="form-control" required></div>
+            <div class="col-md-6"><label>Costo del Proveedor</label><input type="number" id="vCosto" class="form-control" required></div>
+            <div class="col-md-6"><label>Fecha Límite Cliente</label><input type="date" id="vFechaC" class="form-control"></div>
+            <div class="col-md-6"><label>Fecha Límite Proveedor</label><input type="date" id="vFechaP" class="form-control"></div>
+            <div class="col-12 mt-3"><button type="submit" class="btn btn-primary w-100">Guardar Viaje</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Historial Pagos -->
+<div class="modal fade" id="modalHistorial" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Historial de Pagos - Folio <span id="historialFolioText"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <ul class="list-group" id="lista-historial">
+            <!-- Llena con JS -->
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
