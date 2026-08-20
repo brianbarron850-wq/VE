@@ -444,7 +444,7 @@ function generarTicketPdf(folio, cliente, concepto, monto, metodo, fecha) {
                 <div class="header">
                     <!-- LOGO EN TICKET PDF -->
                     <div style="display:flex; justify-content:center; margin-bottom: 15px;">
-                        <img src="https://lh3.googleusercontent.com/d/1ApOiGW9GcvtP__t9hXkl7OSjrzF_Hwt1" alt="Vania Escapes Logo" style="width: 120px; border-radius: 8px;">
+                        <img src="https://drive.google.com/file/d/1ApOiGW9GcvtP__t9hXkl7OSjrzF_Hwt1/view?usp=sharing" alt="Vania Escapes Logo" style="width: 120px; border-radius: 8px;">
                     </div>
                     
                     <div class="brand-title">VANIA ESCAPES</div>
