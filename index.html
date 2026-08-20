@@ -3,94 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | Agencia de Viajes</title>
-    <!-- Google Fonts: Nunito -->
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <title>VANIA ESCAPES | Panel Financiero</title>
+    <!-- Google Fonts: Montserrat & Nunito -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
+        :root {
+            --ve-teal: #5B8A88;
+            --ve-teal-dark: #2D4341;
+            --ve-teal-light: #7A9F9C;
+            --ve-sand: #C5AA83;
+            --ve-sand-light: #E8DCB8;
+            --ve-cream: #F7F5F0;
+            --ve-text: #2D3A3A;
+            --ve-gray: #6B7C7B;
+        }
+
         body { 
-            background-color: #f4f7f6;
+            background-color: var(--ve-cream);
             font-family: 'Nunito', sans-serif;
-            color: #2c3e50;
+            color: var(--ve-text);
+        }
+
+        h1, h2, h3, h4, h5, h6, .brand-font {
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 0.5px;
         }
         
-        /* Pantalla de Login PIN */
+        /* Login Screen estilo Vania Escapes */
         #login-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            background: linear-gradient(135deg, #2D4341, #5B8A88, #7A9F9C);
             z-index: 9999;
             display: flex;
             justify-content: center;
             align-items: center;
         }
+
         .pin-card {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            background: #FFFFFF;
+            padding: 3rem 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(45, 67, 65, 0.25);
             width: 100%;
-            max-width: 380px;
+            max-width: 420px;
             text-align: center;
+            border: 1px solid rgba(197, 170, 131, 0.3);
+        }
+
+        .tagline {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--ve-sand);
+            font-weight: 700;
         }
 
         .header-bg {
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            background: linear-gradient(135deg, #2D4341 0%, #5B8A88 100%);
             color: white;
-            padding: 2.5rem 0;
-            border-radius: 0 0 30px 30px;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 2.2rem 0;
+            border-radius: 0 0 35px 35px;
+            box-shadow: 0 10px 25px rgba(45, 67, 65, 0.15);
+            border-bottom: 3px solid var(--ve-sand);
         }
+
         .card-resumen { 
             border: none;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            transition: transform 0.2s ease-in-out;
+            border-radius: 18px;
+            background: #FFFFFF;
+            box-shadow: 0 8px 20px rgba(45, 67, 65, 0.06);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        .card-resumen:hover { transform: translateY(-5px); }
-        .icon-large { font-size: 2rem; opacity: 0.8; }
+        .card-resumen:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 12px 25px rgba(45, 67, 65, 0.1);
+        }
         
+        .nav-tabs {
+            border-bottom: 2px solid #E2DED5;
+        }
         .nav-tabs .nav-link {
             border-radius: 12px 12px 0 0;
-            color: #7f8c8d;
-            font-weight: 600;
-            padding: 12px 20px;
+            color: var(--ve-gray);
+            font-weight: 700;
+            padding: 12px 24px;
             border: none;
             background-color: transparent;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.95rem;
         }
-        .nav-tabs .nav-link:hover { border-color: transparent; color: #2c5364; }
+        .nav-tabs .nav-link:hover { color: var(--ve-teal); }
         .nav-tabs .nav-link.active {
-            color: #2c5364;
-            background-color: #fff;
-            border-bottom: 3px solid #203a43;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.02);
+            color: var(--ve-teal-dark);
+            background-color: #FFFFFF;
+            border-bottom: 3.5 solid var(--ve-sand);
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.03);
         }
+
         .tab-content {
-            border-radius: 0 15px 15px 15px;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.04);
-            border: none;
+            border-radius: 0 18px 18px 18px;
+            background: #FFFFFF;
+            box-shadow: 0 8px 30px rgba(45, 67, 65, 0.05);
         }
-        
-        .table { vertical-align: middle; }
+
         .table thead th { 
-            background-color: #f8f9fa; 
-            color: #34495e; 
+            background-color: #F3F0E9; 
+            color: var(--ve-teal-dark); 
             font-weight: 700;
-            border-bottom: 2px solid #e2e8f0;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--ve-sand);
+            padding: 14px;
         }
         .clickable-row { cursor: pointer; transition: background-color 0.2s; }
-        .clickable-row:hover { background-color: #edf2f7; }
+        .clickable-row:hover { background-color: #F8F6F0; }
         
-        .btn-custom { border-radius: 10px; font-weight: 600; padding: 10px 20px; }
-        .form-control, .form-select { border-radius: 10px; border: 1px solid #ced4da; padding: 10px 15px;}
-        .form-control:focus, .form-select:focus { box-shadow: 0 0 0 0.25rem rgba(44, 83, 100, 0.25); border-color: #2c5364; }
+        .btn-ve-primary {
+            background-color: var(--ve-teal);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            padding: 10px 22px;
+            transition: all 0.2s;
+        }
+        .btn-ve-primary:hover {
+            background-color: var(--ve-teal-dark);
+            color: white;
+        }
+
+        .btn-ve-sand {
+            background-color: var(--ve-sand);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            padding: 10px 22px;
+        }
+        .btn-ve-sand:hover {
+            background-color: #B59871;
+            color: white;
+        }
+
+        .btn-custom { border-radius: 10px; font-weight: 700; padding: 10px 20px; }
+        .form-control, .form-select { border-radius: 10px; border: 1px solid #D8D3C8; padding: 11px 15px;}
+        .form-control:focus, .form-select:focus { 
+            box-shadow: 0 0 0 0.25rem rgba(91, 138, 136, 0.25); 
+            border-color: var(--ve-teal); 
+        }
         
-        .modal-content { border-radius: 20px; border: none; }
-        .modal-header { border-bottom: none; background-color: #f8f9fa; border-radius: 20px 20px 0 0; }
+        .modal-content { border-radius: 22px; border: none; }
+        .modal-header { border-bottom: 2px solid #F0ECE1; background-color: #F8F6F0; border-radius: 22px 22px 0 0; }
+        
+        /* Custom Logo Component SVG */
+        .brand-logo-container {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -98,18 +175,31 @@
 <!-- Vista de Acceso con PIN -->
 <div id="login-screen">
     <div class="pin-card">
-        <div class="mb-3 text-primary">
-            <i class="bi bi-shield-lock-fill fs-1"></i>
+        <!-- Logo SVG Vania Escapes en Login -->
+        <div class="mb-3">
+            <svg width="110" height="110" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="100" cy="100" r="90" stroke="#C5AA83" stroke-width="5"/>
+                <circle cx="100" cy="100" r="78" stroke="#5B8A88" stroke-width="4" stroke-dasharray="8 4"/>
+                <!-- Brújula Estrella -->
+                <path d="M100 25 L112 88 L175 100 L112 112 L100 175 L88 112 L25 100 L88 88 Z" fill="#5B8A88"/>
+                <path d="M100 25 L100 100 L175 100 Z" fill="#C5AA83" opacity="0.8"/>
+                <path d="M100 175 L100 100 L25 100 Z" fill="#7A9F9C" opacity="0.8"/>
+                <!-- Ola de Mar abajo -->
+                <path d="M30 135 C 60 115, 90 155, 120 135 C 150 115, 170 135, 170 135 C 170 135, 150 165, 100 165 C 50 165, 30 135, 30 135 Z" fill="#5B8A88" opacity="0.9"/>
+                <!-- Nube arriba derecha -->
+                <path d="M130 55 C 130 48, 140 45, 148 50 C 153 45, 163 50, 162 56 C 167 58, 166 66, 160 66 L 130 66 C 125 66, 125 57, 130 55 Z" fill="#C5AA83"/>
+            </svg>
         </div>
-        <h4 class="fw-bold mb-2">Acceso Administrador</h4>
-        <p class="text-muted small mb-4">Ingresa tu PIN para acceder al panel principal</p>
+        <h3 class="fw-bold mb-1 brand-font" style="color: var(--ve-teal-dark);">VANIA ESCAPES</h3>
+        <p class="tagline mb-4">TU VIAJE SEGURO, TU MENTE TRANQUILA</p>
+        
         <form id="formLogin">
             <div class="mb-3">
-                <input type="password" id="inputPin" class="form-control text-center fs-4 letter-spacing-2" placeholder="****" maxlength="8" required autofocus>
+                <input type="password" id="inputPin" class="form-control text-center fs-4" placeholder="****" maxlength="8" required autofocus style="letter-spacing: 6px;">
             </div>
-            <div id="loginError" class="text-danger small mb-3 d-none">PIN incorrecto. Intenta de nuevo.</div>
-            <button type="submit" id="btnLogin" class="btn btn-primary btn-custom w-100 py-2">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar
+            <div id="loginError" class="text-danger small mb-3 d-none fw-bold">PIN incorrecto. Intenta de nuevo.</div>
+            <button type="submit" id="btnLogin" class="btn btn-ve-primary w-100 py-2.5">
+                <i class="bi bi-shield-lock-fill me-2"></i>Ingresar al Panel
             </button>
         </form>
     </div>
@@ -118,51 +208,65 @@
 <!-- App Principal -->
 <div id="app-content" class="d-none">
     
-    <!-- Header Moderno -->
+    <!-- Header Moderno con Branding -->
     <div class="header-bg text-center">
         <div class="container position-relative">
-            <button onclick="cerrarSesion()" class="btn btn-outline-light btn-sm position-absolute end-0 top-0 mt-2 me-3 rounded-pill">
+            <button onclick="cerrarSesion()" class="btn btn-outline-light btn-sm position-absolute end-0 top-0 mt-1 me-3 rounded-pill px-3">
                 <i class="bi bi-lock me-1"></i> Bloquear
             </button>
-            <h1 class="fw-bold"><i class="bi bi-airplane-engines me-2"></i>Agencia de Viajes</h1>
-            <p class="mb-0 fs-5 opacity-75">Panel de Control Financiero y Gestión de Pagos</p>
+            
+            <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
+                <!-- SVG Icon Logo Mini -->
+                <svg width="60" height="60" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="100" r="90" stroke="#C5AA83" stroke-width="8"/>
+                    <path d="M100 25 L112 88 L175 100 L112 112 L100 175 L88 112 L25 100 L88 88 Z" fill="#FFFFFF"/>
+                    <path d="M100 25 L100 100 L175 100 Z" fill="#C5AA83"/>
+                    <path d="M30 135 C 60 115, 90 155, 120 135 C 150 115, 170 135, 170 135 C 170 135, 150 165, 100 165 C 50 165, 30 135, 30 135 Z" fill="#7A9F9C"/>
+                </svg>
+                <div class="text-start">
+                    <h1 class="fw-bold mb-0 brand-font" style="letter-spacing: 2px; font-size: 2.2rem;">VANIA ESCAPES</h1>
+                    <span class="tagline text-white opacity-90" style="letter-spacing: 3px;">TU VIAJE SEGURO, TU MENTE TRANQUILA</span>
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="container mt-4">
         
-        <!-- Resumen -->
-        <div class="row text-center mb-5" id="dashboard-resumen">
-            <!-- Se llena con JS -->
+        <!-- Resumen Financiero -->
+        <div class="row text-center mb-4" id="dashboard-resumen">
+            <!-- Se llena dinámicamente -->
         </div>
 
         <!-- Pestañas de Navegación -->
         <ul class="nav nav-tabs" id="myTab" role="tablist">
           <li class="nav-item" role="presentation">
             <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#viajes" type="button" role="tab">
-                <i class="bi bi-map me-1"></i> Control de Viajes
+                <i class="bi bi-compass me-2"></i>Control de Viajes
             </button>
           </li>
           <li class="nav-item" role="presentation">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#cobrar" type="button" role="tab">
-                <i class="bi bi-cash-coin me-1"></i> Cobrar a Cliente
+                <i class="bi bi-wallet2 me-2"></i>Cobrar a Cliente
             </button>
           </li>
           <li class="nav-item" role="presentation">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pagar" type="button" role="tab">
-                <i class="bi bi-building-up me-1"></i> Pagar a Proveedor
+                <i class="bi bi-building-up me-2"></i>Pagar a Proveedor
             </button>
           </li>
         </ul>
 
-        <div class="tab-content bg-white p-4 p-md-5 mb-5">
+        <div class="tab-content p-4 p-md-5 mb-5">
             
             <!-- Pestaña: Control de Pagos -->
             <div class="tab-pane fade show active" id="viajes" role="tabpanel">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="fw-bold mb-0 text-secondary"><i class="bi bi-card-list me-2"></i>Registros Activos</h4>
-                    <button class="btn btn-primary btn-custom shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoViaje">
-                        <i class="bi bi-plus-lg me-1"></i> Nuevo Viaje
+                    <h4 class="fw-bold mb-0 brand-font" style="color: var(--ve-teal-dark);">
+                        <i class="bi bi-journal-bookmark me-2" style="color: var(--ve-sand);"></i>Registros de Viajes
+                    </h4>
+                    <button class="btn btn-ve-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoViaje">
+                        <i class="bi bi-plus-lg me-1"></i> Aperturar Viaje
                     </button>
                 </div>
                 
@@ -170,7 +274,15 @@
                     <table class="table table-hover align-middle">
                         <thead>
                             <tr>
-                                <th>Folio</th><th>Cliente</th><th>Destino</th><th>Total Viaje</th><th>Falta Cliente</th><th>Saldo Prov.</th><th>Límite Cliente</th><th>Límite Prov.</th><th class="text-center">Acciones</th>
+                                <th>Folio</th>
+                                <th>Cliente</th>
+                                <th>Destino</th>
+                                <th>Venta Total</th>
+                                <th>Saldo Cliente</th>
+                                <th>Saldo Prov.</th>
+                                <th>Límite Cliente</th>
+                                <th>Límite Prov.</th>
+                                <th class="text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-viajes">
@@ -178,21 +290,23 @@
                         </tbody>
                     </table>
                     <div class="text-muted mt-3 small">
-                        <i class="bi bi-info-circle me-1"></i> Da doble clic en una fila para ver el historial de movimientos de ese viaje.
+                        <i class="bi bi-info-circle me-1" style="color: var(--ve-sand);"></i> Haz doble clic en una fila para consultar el historial completo de pagos y tickets PDF.
                     </div>
                 </div>
             </div>
 
             <!-- Pestaña: Cobrar Cliente -->
             <div class="tab-pane fade" id="cobrar" role="tabpanel">
-                <h4 class="fw-bold text-success mb-4"><i class="bi bi-wallet2 me-2"></i>Registrar Cobro a Cliente</h4>
+                <h4 class="fw-bold mb-4 brand-font" style="color: var(--ve-teal-dark);">
+                    <i class="bi bi-cash-stack me-2" style="color: var(--ve-sand);"></i>Registrar Cobro a Cliente
+                </h4>
                 <form id="formCobro" class="row g-4">
                     <div class="col-md-4">
                         <label class="form-label fw-semibold">Folio del Viaje</label>
                         <select class="form-select select-folios" id="cobroFolio" required></select>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">Nombre del Cliente</label>
+                        <label class="form-label fw-semibold">Cliente</label>
                         <input type="text" class="form-control bg-light" id="cobroCliente" readonly>
                     </div>
                     <div class="col-md-4">
@@ -203,35 +317,40 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">Concepto</label>
-                        <input type="text" class="form-control" id="cobroConcepto" placeholder="Ej. Anticipo vuelo y hotel" required>
+                        <label class="form-label fw-semibold">Concepto de Pago</label>
+                        <input type="text" class="form-control" id="cobroConcepto" placeholder="Ej. Anticipo hospedaje y vuelos" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Método de Pago</label>
                         <select class="form-select" id="cobroMetodo">
-                            <option>Efectivo</option><option>Transferencia</option><option>Tarjeta de Crédito</option><option>Tarjeta de Débito</option>
+                            <option>Transferencia SPEI</option>
+                            <option>Efectivo</option>
+                            <option>Tarjeta de Crédito</option>
+                            <option>Tarjeta de Débito</option>
                         </select>
                     </div>
                     <div class="col-12 mt-4 pt-2 border-top">
-                        <button type="submit" class="btn btn-success btn-custom px-5"><i class="bi bi-check-circle me-2"></i>Registrar Pago</button>
+                        <button type="submit" class="btn btn-ve-primary px-5"><i class="bi bi-check-circle me-2"></i>Guardar Pago</button>
                     </div>
                 </form>
             </div>
 
             <!-- Pestaña: Pagar Proveedor -->
             <div class="tab-pane fade" id="pagar" role="tabpanel">
-                <h4 class="fw-bold text-warning mb-4"><i class="bi bi-send me-2"></i>Registrar Pago a Proveedor</h4>
+                <h4 class="fw-bold mb-4 brand-font" style="color: var(--ve-teal-dark);">
+                    <i class="bi bi-box-arrow-up-right me-2" style="color: var(--ve-sand);"></i>Registrar Pago a Proveedor
+                </h4>
                 <form id="formPagoProv" class="row g-4">
                     <div class="col-md-4">
                         <label class="form-label fw-semibold">Folio del Viaje</label>
                         <select class="form-select select-folios" id="provFolio" required></select>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">Nombre del Cliente (Referencia)</label>
+                        <label class="form-label fw-semibold">Cliente Referencia</label>
                         <input type="text" class="form-control bg-light" id="provCliente" readonly>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">Monto a Pagar</label>
+                        <label class="form-label fw-semibold">Monto Pagado</label>
                         <div class="input-group">
                             <span class="input-group-text bg-white">$</span>
                             <input type="number" class="form-control" id="provMonto" required>
@@ -239,16 +358,18 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Concepto</label>
-                        <input type="text" class="form-control" id="provConcepto" placeholder="Ej. Liquidación de tour" required>
+                        <input type="text" class="form-control" id="provConcepto" placeholder="Ej. Liquidación de reserva hotelera" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Método de Pago</label>
                         <select class="form-select" id="provMetodo">
-                            <option>Transferencia</option><option>Efectivo</option><option>Tarjeta corporativa</option>
+                            <option>Transferencia SPEI</option>
+                            <option>Tarjeta corporativa</option>
+                            <option>Efectivo</option>
                         </select>
                     </div>
                     <div class="col-12 mt-4 pt-2 border-top">
-                        <button type="submit" class="btn btn-warning btn-custom px-5"><i class="bi bi-check-circle me-2"></i>Registrar Pago</button>
+                        <button type="submit" class="btn btn-ve-sand px-5"><i class="bi bi-check-circle me-2"></i>Guardar Pago Proveedor</button>
                     </div>
                 </form>
             </div>
@@ -262,24 +383,32 @@
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content shadow-lg">
       <div class="modal-header pt-4 px-4">
-        <h5 class="modal-title fw-bold"><i class="bi bi-luggage-fill me-2"></i>Aperturar Nuevo Viaje</h5>
+        <h5 class="modal-title fw-bold brand-font" style="color: var(--ve-teal-dark);">
+            <i class="bi bi-airplane-engines me-2" style="color: var(--ve-sand);"></i>Aperturar Nuevo Viaje
+        </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body p-4">
         <form id="formNuevoViaje" class="row g-3">
-            <div class="col-md-4"><label class="form-label text-muted small mb-1">ID/Folio</label><input type="text" id="vFolio" class="form-control" placeholder="Ej. VJ-001" required></div>
-            <div class="col-md-8"><label class="form-label text-muted small mb-1">Nombre del Cliente</label><input type="text" id="vCliente" class="form-control" placeholder="Nombre completo" required></div>
-            <div class="col-md-6"><label class="form-label text-muted small mb-1">Destino del Viaje</label><input type="text" id="vDestino" class="form-control" placeholder="Ej. Cancún, México" required></div>
-            <div class="col-md-6"><label class="form-label text-muted small mb-1">Proveedor (Agencia/Operador)</label><input type="text" id="vProveedor" class="form-control" placeholder="Nombre del proveedor" required></div>
-            <div class="col-md-6"><label class="form-label text-muted small mb-1">Precio Total (Venta al Cliente)</label>
+            <div class="col-md-4"><label class="form-label text-muted small mb-1">ID / Folio</label><input type="text" id="vFolio" class="form-control" placeholder="Ej. VE-101" required></div>
+            <div class="col-md-8"><label class="form-label text-muted small mb-1">Nombre Completo del Cliente</label><input type="text" id="vCliente" class="form-control" placeholder="Nombre de cliente" required></div>
+            <div class="col-md-6"><label class="form-label text-muted small mb-1">Destino</label><input type="text" id="vDestino" class="form-control" placeholder="Ej. Cancún, México" required></div>
+            <div class="col-md-6"><label class="form-label text-muted small mb-1">Proveedor / Mayorista</label><input type="text" id="vProveedor" class="form-control" placeholder="Nombre de operador" required></div>
+            <div class="col-md-6"><label class="form-label text-muted small mb-1">Precio Total Venta (Cliente)</label>
                 <div class="input-group"><span class="input-group-text">$</span><input type="number" id="vTotal" class="form-control" required></div>
             </div>
-            <div class="col-md-6"><label class="form-label text-muted small mb-1">Costo Neto (Cobro del Proveedor)</label>
+            <div class="col-md-6"><label class="form-label text-muted small mb-1">Costo Neto (Proveedor)</label>
                 <div class="input-group"><span class="input-group-text">$</span><input type="number" id="vCosto" class="form-control" required></div>
             </div>
-            <div class="col-md-6"><label class="form-label text-muted small mb-1">Fecha Límite Pago del Cliente</label><input type="date" id="vFechaC" class="form-control"></div>
-            <div class="col-md-6"><label class="form-label text-muted small mb-1">Fecha Límite Pago a Proveedor</label><input type="date" id="vFechaP" class="form-control"></div>
-            <div class="col-12 mt-4"><button type="submit" class="btn btn-primary btn-custom w-100 py-2"><i class="bi bi-cloud-arrow-up me-2"></i>Guardar Viaje en Base de Datos</button></div>
+            <div class="col-md-6">
+                <label class="form-label text-muted small mb-1">Fecha Límite Pago Cliente</label>
+                <input type="date" id="vFechaC" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label text-muted small mb-1">Fecha Límite Pago Proveedor</label>
+                <input type="date" id="vFechaP" class="form-control" required>
+            </div>
+            <div class="col-12 mt-4"><button type="submit" class="btn btn-ve-primary w-100 py-2.5"><i class="bi bi-cloud-arrow-up me-2"></i>Guardar Viaje en Sistema</button></div>
         </form>
       </div>
     </div>
@@ -291,14 +420,16 @@
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content shadow-lg">
       <div class="modal-header pt-4 px-4">
-        <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i>Editar Registro de Viaje</h5>
+        <h5 class="modal-title fw-bold brand-font" style="color: var(--ve-teal-dark);">
+            <i class="bi bi-pencil-square me-2" style="color: var(--ve-sand);"></i>Editar Registro de Viaje
+        </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body p-4">
         <form id="formEditarViaje" class="row g-3">
-            <div class="col-md-4"><label class="form-label text-muted small mb-1">ID/Folio</label><input type="text" id="eFolio" class="form-control bg-light" readonly></div>
+            <div class="col-md-4"><label class="form-label text-muted small mb-1">Folio (No modificable)</label><input type="text" id="eFolio" class="form-control bg-light" readonly></div>
             <div class="col-md-8"><label class="form-label text-muted small mb-1">Nombre del Cliente</label><input type="text" id="eCliente" class="form-control" required></div>
-            <div class="col-md-6"><label class="form-label text-muted small mb-1">Destino del Viaje</label><input type="text" id="eDestino" class="form-control" required></div>
+            <div class="col-md-6"><label class="form-label text-muted small mb-1">Destino</label><input type="text" id="eDestino" class="form-control" required></div>
             <div class="col-md-6"><label class="form-label text-muted small mb-1">Proveedor</label><input type="text" id="eProveedor" class="form-control" required></div>
             <div class="col-md-6"><label class="form-label text-muted small mb-1">Precio Total (Venta)</label>
                 <div class="input-group"><span class="input-group-text">$</span><input type="number" id="eTotal" class="form-control" required></div>
@@ -306,9 +437,15 @@
             <div class="col-md-6"><label class="form-label text-muted small mb-1">Costo Neto (Proveedor)</label>
                 <div class="input-group"><span class="input-group-text">$</span><input type="number" id="eCosto" class="form-control" required></div>
             </div>
-            <div class="col-md-6"><label class="form-label text-muted small mb-1">Fecha Límite Pago Cliente</label><input type="date" id="eFechaC" class="form-control"></div>
-            <div class="col-md-6"><label class="form-label text-muted small mb-1">Fecha Límite Pago Proveedor</label><input type="date" id="eFechaP" class="form-control"></div>
-            <div class="col-12 mt-4"><button type="submit" class="btn btn-warning btn-custom w-100 py-2"><i class="bi bi-save me-2"></i>Guardar Cambios</button></div>
+            <div class="col-md-6">
+                <label class="form-label text-muted small mb-1">Fecha Límite Pago Cliente</label>
+                <input type="date" id="eFechaC" class="form-control">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label text-muted small mb-1">Fecha Límite Pago Proveedor</label>
+                <input type="date" id="eFechaP" class="form-control">
+            </div>
+            <div class="col-12 mt-4"><button type="submit" class="btn btn-ve-sand w-100 py-2.5"><i class="bi bi-save me-2"></i>Guardar Cambios</button></div>
         </form>
       </div>
     </div>
@@ -320,7 +457,9 @@
   <div class="modal-dialog modal-dialog-scrollable">
     <div class="modal-content shadow-lg">
       <div class="modal-header pt-4 px-4">
-        <h5 class="modal-title fw-bold"><i class="bi bi-clock-history me-2"></i>Historial - Folio <span id="historialFolioText" class="text-primary"></span></h5>
+        <h5 class="modal-title fw-bold brand-font" style="color: var(--ve-teal-dark);">
+            <i class="bi bi-clock-history me-2" style="color: var(--ve-sand);"></i>Historial de Viaje - <span id="historialFolioText" style="color: var(--ve-teal);"></span>
+        </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body p-0">
@@ -329,7 +468,7 @@
         </ul>
       </div>
       <div class="modal-footer bg-light border-0">
-        <button type="button" class="btn btn-secondary btn-custom" data-bs-dismiss="modal">Cerrar Historial</button>
+        <button type="button" class="btn btn-secondary btn-custom" data-bs-dismiss="modal">Cerrar</button>
       </div>
     </div>
   </div>
