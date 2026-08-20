@@ -1,10 +1,10 @@
-// PEGA AQUÍ LA URL COMPLETA DE TU WEB APP DE APPS SCRIPT
+// AQUI PEGA TU URL IMPLEMENTADA DE APPS SCRIPT
 const API_URL = "https://script.google.com/macros/s/AKfycbwIIgViY2Ri6dJ405xN-ypFh0duymToANtfZxDoWUU9GbD6JUxTw2YEGsVPXJYloc56/exec"; 
 
 let viajesData = [];
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Verificar sesión guardada
+    // Verificar sesión previa
     if (sessionStorage.getItem('adminUnlocked') === 'true') {
         mostrarDashboard();
     }
@@ -31,7 +31,30 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// --- AUTENTICACIÓN POR PIN ---
+// Helper para convertir fechas HTML YYYY-MM-DD a DD/MM/AAAA para enviarlas limpias
+function formatoFechaLimpia(strFecha) {
+    if (!strFecha) return "";
+    if (strFecha.includes('T')) strFecha = strFecha.split('T')[0];
+    if (strFecha.includes(' ')) strFecha = strFecha.split(' ')[0];
+    
+    let partes = strFecha.split('-');
+    if (partes.length === 3 && partes[0].length === 4) {
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+    return strFecha;
+}
+
+// Convertir DD/MM/AAAA a YYYY-MM-DD para cargar inputs date de HTML
+function formatoParaInputDate(strFecha) {
+    if (!strFecha) return "";
+    let partes = strFecha.split('/');
+    if (partes.length === 3 && partes[2].length === 4) {
+        return `${partes[2]}-${partes[1].padStart(2,'0')}-${partes[0].padStart(2,'0')}`;
+    }
+    return strFecha;
+}
+
+// --- AUTENTICACIÓN ---
 
 async function verificarPin(e) {
     e.preventDefault();
@@ -41,7 +64,7 @@ async function verificarPin(e) {
     
     errorEl.classList.add('d-none');
     btnLogin.disabled = true;
-    btnLogin.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verificando...';
+    btnLogin.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Validando...';
 
     try {
         const res = await enviarPost('loginPin', { pin: pin });
@@ -58,7 +81,7 @@ async function verificarPin(e) {
         errorEl.classList.remove('d-none');
     } finally {
         btnLogin.disabled = false;
-        btnLogin.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Ingresar';
+        btnLogin.innerHTML = '<i class="bi bi-shield-lock-fill me-2"></i>Ingresar al Panel';
     }
 }
 
@@ -73,7 +96,7 @@ function cerrarSesion() {
     location.reload();
 }
 
-// --- CARGA DE DATOS ---
+// --- CARGA DE DATOS Y RENDERIZADO ---
 
 async function cargarDatos() {
     try {
@@ -83,37 +106,37 @@ async function cargarDatos() {
         
         document.getElementById('dashboard-resumen').innerHTML = `
             <div class="col-md-3 mb-3">
-                <div class="card card-resumen bg-white p-4 h-100 border-start border-4 border-info">
+                <div class="card card-resumen p-4 h-100 border-start border-4" style="border-color: #5B8A88 !important;">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-muted mb-0 fw-bold">VENTAS TOTALES</h6>
-                        <i class="bi bi-graph-up-arrow text-info icon-large"></i>
+                        <h6 class="text-muted mb-0 fw-bold small">VENTAS TOTALES</h6>
+                        <i class="bi bi-graph-up-arrow fs-3" style="color: #5B8A88;"></i>
                     </div>
                     <h3 class="fw-bold text-dark text-start mb-0">$${dataResumen.ventas || 0}</h3>
                 </div>
             </div>
             <div class="col-md-3 mb-3">
-                <div class="card card-resumen bg-white p-4 h-100 border-start border-4 border-success">
+                <div class="card card-resumen p-4 h-100 border-start border-4" style="border-color: #2D4341 !important;">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-muted mb-0 fw-bold">COBRADO</h6>
-                        <i class="bi bi-wallet2 text-success icon-large"></i>
+                        <h6 class="text-muted mb-0 fw-bold small">TOTAL COBRADO</h6>
+                        <i class="bi bi-wallet2 fs-3" style="color: #2D4341;"></i>
                     </div>
                     <h3 class="fw-bold text-dark text-start mb-0">$${dataResumen.recibido || 0}</h3>
                 </div>
             </div>
             <div class="col-md-3 mb-3">
-                <div class="card card-resumen bg-white p-4 h-100 border-start border-4 border-warning">
+                <div class="card card-resumen p-4 h-100 border-start border-4" style="border-color: #C5AA83 !important;">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-muted mb-0 fw-bold">PAGADO A PROV.</h6>
-                        <i class="bi bi-send-check text-warning icon-large"></i>
+                        <h6 class="text-muted mb-0 fw-bold small">PAGADO A PROVEEDOR</h6>
+                        <i class="bi bi-send-check fs-3" style="color: #C5AA83;"></i>
                     </div>
                     <h3 class="fw-bold text-dark text-start mb-0">$${dataResumen.pagado || 0}</h3>
                 </div>
             </div>
             <div class="col-md-3 mb-3">
-                <div class="card card-resumen bg-white p-4 h-100 border-start border-4 border-primary">
+                <div class="card card-resumen p-4 h-100 border-start border-4" style="border-color: #7A9F9C !important;">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-muted mb-0 fw-bold">EN CAJA (RETENIDO)</h6>
-                        <i class="bi bi-safe text-primary icon-large"></i>
+                        <h6 class="text-muted mb-0 fw-bold small">EN CAJA (RETENIDO)</h6>
+                        <i class="bi bi-safe fs-3" style="color: #7A9F9C;"></i>
                     </div>
                     <h3 class="fw-bold text-dark text-start mb-0">$${dataResumen.retenido || 0}</h3>
                 </div>
@@ -129,7 +152,7 @@ async function cargarDatos() {
         let htmlOpciones = '<option value="">Selecciona un folio...</option>';
 
         if (viajesData.length === 0) {
-            htmlTabla = `<tr><td colspan="9" class="text-center py-4 text-muted"><i class="bi bi-inbox fs-3 d-block mb-2"></i>No hay registros de viajes activos</td></tr>`;
+            htmlTabla = `<tr><td colspan="9" class="text-center py-4 text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>No hay registros de viajes activos</td></tr>`;
         } else {
             viajesData.forEach(v => {
                 let fCliente = v.fechaCliente ? v.fechaCliente : '-';
@@ -137,12 +160,12 @@ async function cargarDatos() {
 
                 htmlTabla += `
                     <tr class="clickable-row" ondblclick="verHistorial('${v.folio}')">
-                        <td class="fw-bold text-primary">${v.folio}</td>
+                        <td class="fw-bold" style="color: var(--ve-teal);">${v.folio}</td>
                         <td class="fw-semibold">${v.cliente}</td>
-                        <td><i class="bi bi-geo-alt text-danger me-1"></i>${v.destino}</td>
+                        <td><i class="bi bi-geo-alt me-1" style="color: var(--ve-sand);"></i>${v.destino}</td>
                         <td class="text-secondary">$${v.totalViaje}</td>
                         <td class="text-danger fw-bold">$${v.faltaPagar}</td>
-                        <td class="text-warning fw-bold">$${v.saldoProveedor}</td>
+                        <td class="fw-bold" style="color: var(--ve-sand);">$${v.saldoProveedor}</td>
                         <td class="small text-muted"><i class="bi bi-calendar3 me-1"></i>${fCliente}</td>
                         <td class="small text-muted"><i class="bi bi-calendar3 me-1"></i>${fProv}</td>
                         <td class="text-center" onclick="event.stopPropagation()">
@@ -161,7 +184,7 @@ async function cargarDatos() {
         document.getElementById('tabla-viajes').innerHTML = htmlTabla;
         document.querySelectorAll('.select-folios').forEach(el => el.innerHTML = htmlOpciones);
     } catch (e) {
-        console.error("Error cargando los datos:", e);
+        console.error("Error cargando datos:", e);
     }
 }
 
@@ -177,6 +200,8 @@ function abrirEditarModal(folio) {
     document.getElementById('eProveedor').value = viaje.proveedor;
     document.getElementById('eTotal').value = viaje.totalViaje;
     document.getElementById('eCosto').value = viaje.costoProveedor || 0;
+    document.getElementById('eFechaC').value = formatoParaInputDate(viaje.fechaCliente);
+    document.getElementById('eFechaP').value = formatoParaInputDate(viaje.fechaProveedor);
 
     const modal = new bootstrap.Modal(document.getElementById('modalEditarViaje'));
     modal.show();
@@ -191,8 +216,8 @@ async function guardarEdicionViaje(e) {
         proveedor: document.getElementById('eProveedor').value,
         totalViaje: document.getElementById('eTotal').value,
         costoProveedor: document.getElementById('eCosto').value,
-        fechaCliente: document.getElementById('eFechaC').value,
-        fechaProveedor: document.getElementById('eFechaP').value
+        fechaCliente: formatoFechaLimpia(document.getElementById('eFechaC').value),
+        fechaProveedor: formatoFechaLimpia(document.getElementById('eFechaP').value)
     };
 
     await enviarPost('editarViaje', payload);
@@ -208,29 +233,29 @@ async function eliminarRegistroViaje(folio) {
     }
 }
 
-// --- HISTORIAL Y GENERACIÓN DE TICKET PDF ---
+// --- HISTORIAL Y TICKET PDF BRANDED (VANIA ESCAPES) ---
 
 async function verHistorial(folio) {
     document.getElementById('historialFolioText').innerText = folio;
     const modal = new bootstrap.Modal(document.getElementById('modalHistorial'));
     modal.show();
 
-    document.getElementById('lista-historial').innerHTML = '<li class="list-group-item p-4 text-center"><div class="spinner-border text-primary" role="status"></div><br>Cargando movimientos...</li>';
+    document.getElementById('lista-historial').innerHTML = '<li class="list-group-item p-4 text-center"><div class="spinner-border text-success" role="status"></div><br>Cargando movimientos...</li>';
     
     const res = await fetch(`${API_URL}?action=getHistorial&id=${folio}`);
     const data = await res.json();
     
     let html = '';
     if(!data.data || data.data.length === 0) {
-        html = '<li class="list-group-item p-4 text-center text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>No hay movimientos registrados.</li>';
+        html = '<li class="list-group-item p-4 text-center text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>No hay pagos registrados para este viaje.</li>';
     } else {
         data.data.forEach((pago) => {
             let esCliente = pago.tipo === 'Cliente';
             let colorMonto = esCliente ? 'text-success' : 'text-warning';
-            let etiquetaIcono = esCliente ? 'bi-person-down text-success' : 'bi-building-up text-warning';
             let bgEtiqueta = esCliente ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-dark';
             let signo = esCliente ? '+' : '-';
             
+            // Botón PDF exclusivo de pagos del cliente
             let botonPdf = esCliente ? 
                 `<button class="btn btn-sm btn-outline-primary mt-2" onclick="generarTicketPdf('${pago.folio}', '${pago.cliente}', '${pago.concepto}', '${pago.monto}', '${pago.metodo}', '${pago.fecha}')">
                     <i class="bi bi-file-earmark-pdf me-1"></i> Ver Ticket PDF
@@ -240,7 +265,7 @@ async function verHistorial(folio) {
             <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
                 <div>
                     <strong class="d-block text-dark">${pago.concepto}</strong>
-                    <span class="badge ${bgEtiqueta} border-0 mb-1 rounded-pill"><i class="bi ${etiquetaIcono} me-1"></i>${pago.tipo}</span>
+                    <span class="badge ${bgEtiqueta} border-0 mb-1 rounded-pill">${pago.tipo}</span>
                     <br><small class="text-muted"><i class="bi bi-calendar me-1"></i>${pago.fecha} &bull; <i class="bi bi-credit-card me-1"></i>${pago.metodo}</small>
                     <br>${botonPdf}
                 </div>
@@ -257,42 +282,79 @@ function generarTicketPdf(folio, cliente, concepto, monto, metodo, fecha) {
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Ticket de Pago - ${folio}</title>
+            <title>Comprobante de Pago - ${folio}</title>
             <style>
-                body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 30px; color: #333; max-width: 450px; margin: auto; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
-                .header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; }
-                .header h2 { margin: 0; color: #2c5364; }
-                .header p { margin: 5px 0 0 0; font-size: 14px; color: #777; }
-                .row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 15px; }
-                .label { color: #666; font-weight: bold; }
-                .value { font-weight: 500; text-align: right; }
-                .total-box { background: #f8f9fa; border-radius: 8px; padding: 15px; text-align: center; margin-top: 20px; }
-                .total-title { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
-                .total-amount { font-size: 26px; color: #27ae60; font-weight: bold; margin-top: 5px; }
-                .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #aaa; border-top: 1px solid #eee; padding-top: 15px; }
+                body { 
+                    font-family: 'Helvetica Neue', Arial, sans-serif; 
+                    padding: 40px 30px; 
+                    color: #2D3A3A; 
+                    max-width: 480px; 
+                    margin: auto; 
+                    background-color: #FFFFFF;
+                }
+                .ticket-card {
+                    border: 2px solid #C5AA83;
+                    border-radius: 16px;
+                    padding: 30px;
+                    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+                }
+                .header { text-align: center; border-bottom: 2px dashed #C5AA83; padding-bottom: 20px; margin-bottom: 25px; }
+                .brand-title { font-size: 22px; font-weight: bold; color: #5B8A88; margin: 10px 0 2px 0; letter-spacing: 1px; }
+                .tagline { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #C5AA83; font-weight: bold; margin-bottom: 10px; }
+                .subtitle { font-size: 13px; color: #6B7C7B; font-weight: 500; }
+                
+                .row { display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 14px; }
+                .label { color: #6B7C7B; font-weight: bold; }
+                .value { font-weight: 600; text-align: right; color: #2D3A3A; }
+                
+                .total-box { 
+                    background: #F7F5F0; 
+                    border: 1px solid #E8DCB8;
+                    border-radius: 12px; 
+                    padding: 18px; 
+                    text-align: center; 
+                    margin-top: 25px; 
+                }
+                .total-title { font-size: 11px; color: #6B7C7B; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+                .total-amount { font-size: 30px; color: #5B8A88; font-weight: bold; margin-top: 5px; }
+                
+                .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #8C9B9A; border-top: 1px solid #F0ECE1; padding-top: 15px; }
+                
                 @media print {
-                    body { border: none; box-shadow: none; }
+                    body { padding: 0; background: white; }
+                    .ticket-card { border: none; box-shadow: none; }
                 }
             </style>
         </head>
         <body>
-            <div class="header">
-                <h2>AGENCIA DE VIAJES</h2>
-                <p>Comprobante Oficial de Pago</p>
-            </div>
-            <div class="row"><span class="label">Folio del Viaje:</span><span class="value">${folio}</span></div>
-            <div class="row"><span class="label">Fecha:</span><span class="value">${fecha}</span></div>
-            <div class="row"><span class="label">Cliente:</span><span class="value">${cliente}</span></div>
-            <div class="row"><span class="label">Concepto:</span><span class="value">${concepto}</span></div>
-            <div class="row"><span class="label">Método de Pago:</span><span class="value">${metodo}</span></div>
-            
-            <div class="total-box">
-                <div class="total-title">Monto Recibido</div>
-                <div class="total-amount">$${monto}</div>
-            </div>
+            <div class="ticket-card">
+                <div class="header">
+                    <!-- SVG Logo Vania Escapes en Ticket -->
+                    <svg width="60" height="60" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="100" cy="100" r="90" stroke="#C5AA83" stroke-width="6"/>
+                        <path d="M100 25 L112 88 L175 100 L112 112 L100 175 L88 112 L25 100 L88 88 Z" fill="#5B8A88"/>
+                        <path d="M100 25 L100 100 L175 100 Z" fill="#C5AA83" opacity="0.8"/>
+                        <path d="M30 135 C 60 115, 90 155, 120 135 C 150 115, 170 135, 170 135 C 170 135, 150 165, 100 165 C 50 165, 30 135, 30 135 Z" fill="#5B8A88"/>
+                    </svg>
+                    <div class="brand-title">VANIA ESCAPES</div>
+                    <div class="tagline">TU VIAJE SEGURO, TU MENTE TRANQUILA</div>
+                    <div class="subtitle">Comprobante Oficial de Pago</div>
+                </div>
 
-            <div class="footer">
-                ¡Gracias por tu preferencia!<br>Conserva este ticket para cualquier aclaración.
+                <div class="row"><span class="label">Folio del Viaje:</span><span class="value">${folio}</span></div>
+                <div class="row"><span class="label">Fecha de Pago:</span><span class="value">${fecha}</span></div>
+                <div class="row"><span class="label">Cliente:</span><span class="value">${cliente}</span></div>
+                <div class="row"><span class="label">Concepto:</span><span class="value">${concepto}</span></div>
+                <div class="row"><span class="label">Método de Pago:</span><span class="value">${metodo}</span></div>
+                
+                <div class="total-box">
+                    <div class="total-title">Monto Recibido</div>
+                    <div class="total-amount">$${monto}</div>
+                </div>
+
+                <div class="footer">
+                    ¡Gracias por elegir Vania Escapes!<br>Conserva este comprobante para cualquier duda o aclaración.
+                </div>
             </div>
 
             <script>
@@ -304,7 +366,7 @@ function generarTicketPdf(folio, cliente, concepto, monto, metodo, fecha) {
     ventana.document.close();
 }
 
-// --- UTILIDADES POST ---
+// --- PETICIONES API ---
 
 async function enviarPost(action, payload) {
     const response = await fetch(API_URL, {
@@ -324,11 +386,11 @@ async function guardarNuevoViaje(e) {
         proveedor: document.getElementById('vProveedor').value,
         totalViaje: document.getElementById('vTotal').value,
         costoProveedor: document.getElementById('vCosto').value,
-        fechaCliente: document.getElementById('vFechaC').value,
-        fechaProveedor: document.getElementById('vFechaP').value
+        fechaCliente: formatoFechaLimpia(document.getElementById('vFechaC').value),
+        fechaProveedor: formatoFechaLimpia(document.getElementById('vFechaP').value)
     };
     await enviarPost('nuevoViaje', payload);
-    alert('Viaje aperturado con éxito.');
+    alert('Viaje guardado exitosamente.');
     location.reload(); 
 }
 
@@ -342,7 +404,7 @@ async function guardarPagoCliente(e) {
         metodo: document.getElementById('cobroMetodo').value
     };
     await enviarPost('pagoCliente', payload);
-    alert('Cobro a cliente registrado correctamente.');
+    alert('Cobro registrado correctamente.');
     location.reload();
 }
 
@@ -356,6 +418,6 @@ async function guardarPagoProveedor(e) {
         metodo: document.getElementById('provMetodo').value
     };
     await enviarPost('pagoProveedor', payload);
-    alert('Pago a proveedor registrado correctamente.');
+    alert('Pago a proveedor registrado.');
     location.reload();
 }
