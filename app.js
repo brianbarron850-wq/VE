@@ -442,8 +442,14 @@ function generarTicketPdf(folio, cliente, concepto, monto, metodo, fecha) {
         <body>
             <div class="ticket-card">
                 <div class="header">
-                    <!-- LOGO ADJUNTO REQUERIDO -->
-                    <img src="image_c1a92e.jpg" alt="Vania Escapes" style="width: 140px; display: block; margin: 0 auto 10px auto; object-fit: contain;">
+                    <!-- LOGO INTEGRADO SVG VECTORIAL EN TICKET -->
+                    <div style="display:flex; justify-content:center; margin-bottom: 10px;">
+                        <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="50" cy="50" r="48" fill="#5B8A88" stroke="#C5AA83" stroke-width="3"/>
+                            <path d="M50 20 L58 42 L80 50 L58 58 L50 80 L42 58 L20 50 L42 42 Z" fill="#C5AA83"/>
+                            <circle cx="50" cy="50" r="8" fill="#2D4341"/>
+                        </svg>
+                    </div>
                     
                     <div class="brand-title">VANIA ESCAPES</div>
                     <div class="tagline">TU VIAJE SEGURO, TU MENTE TRANQUILA</div>
@@ -467,9 +473,8 @@ function generarTicketPdf(folio, cliente, concepto, monto, metodo, fecha) {
             </div>
 
             <script>
-                // Se da un pequeño tiempo de carga para asegurar que la imagen renderice antes de imprimir
                 window.onload = function() { 
-                    setTimeout(function() { window.print(); }, 500);
+                    setTimeout(function() { window.print(); }, 300);
                 }
             </script>
         </body>
