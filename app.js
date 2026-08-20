@@ -4,14 +4,21 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwIIgViY2Ri6dJ405xN-ypF
 let viajesData = [];
 
 document.addEventListener("DOMContentLoaded", () => {
-    cargarDatos();
+    // Verificar si ya ingresó el PIN previamente
+    if (sessionStorage.getItem('adminUnlocked') === 'true') {
+        mostrarDashboard();
+    }
+
+    // Event Listener para Login
+    document.getElementById('formLogin').addEventListener('submit', verificarPin);
 
     // Event Listeners para formularios
     document.getElementById('formNuevoViaje').addEventListener('submit', guardarNuevoViaje);
+    document.getElementById('formEditarViaje').addEventListener('submit', guardarEdicionViaje);
     document.getElementById('formCobro').addEventListener('submit', guardarPagoCliente);
     document.getElementById('formPagoProv').addEventListener('submit', guardarPagoProveedor);
 
-    // Auto-completar nombre de cliente al seleccionar folio en combos
+    // Auto-completar cliente al seleccionar folio
     document.querySelectorAll('.select-folios').forEach(select => {
         select.addEventListener('change', (e) => {
             const folioId = e.target.value;
@@ -23,6 +30,36 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 });
+
+// --- AUTENTICACIÓN POR PIN ---
+
+async function verificarPin(e) {
+    e.preventDefault();
+    const pin = document.getElementById('inputPin').value;
+    const errorEl = document.getElementById('loginError');
+    errorEl.classList.add('d-none');
+
+    const res = await enviarPost('loginPin', { pin: pin });
+    if (res.success) {
+        sessionStorage.setItem('adminUnlocked', 'true');
+        mostrarDashboard();
+    } else {
+        errorEl.classList.remove('d-none');
+    }
+}
+
+function mostrarDashboard() {
+    document.getElementById('login-screen').classList.add('d-none');
+    document.getElementById('app-content').classList.remove('d-none');
+    cargarDatos();
+}
+
+function cerrarSesion() {
+    sessionStorage.removeItem('adminUnlocked');
+    location.reload();
+}
+
+// --- CARGA DE DATOS ---
 
 async function cargarDatos() {
     // Cargar Resumen
@@ -89,6 +126,14 @@ async function cargarDatos() {
                 <td class="text-warning fw-bold">$${v.saldoProveedor}</td>
                 <td class="small text-muted"><i class="bi bi-calendar3 me-1"></i>${fCliente}</td>
                 <td class="small text-muted"><i class="bi bi-calendar3 me-1"></i>${fProv}</td>
+                <td class="text-center" onclick="event.stopPropagation()">
+                    <button class="btn btn-sm btn-outline-warning me-1" title="Editar" onclick="abrirEditarModal('${v.folio}')">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" title="Eliminar" onclick="eliminarRegistroViaje('${v.folio}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
             </tr>`;
         htmlOpciones += `<option value="${v.folio}">${v.folio} - ${v.cliente}</option>`;
     });
@@ -96,6 +141,51 @@ async function cargarDatos() {
     document.getElementById('tabla-viajes').innerHTML = htmlTabla;
     document.querySelectorAll('.select-folios').forEach(el => el.innerHTML = htmlOpciones);
 }
+
+// --- EDICIÓN Y ELIMINACIÓN ---
+
+function abrirEditarModal(folio) {
+    const viaje = viajesData.find(v => v.folio == folio);
+    if (!viaje) return;
+
+    document.getElementById('eFolio').value = viaje.folio;
+    document.getElementById('eCliente').value = viaje.cliente;
+    document.getElementById('eDestino').value = viaje.destino;
+    document.getElementById('eProveedor').value = viaje.proveedor;
+    document.getElementById('eTotal').value = viaje.totalViaje;
+    document.getElementById('eCosto').value = viaje.costoProveedor || 0;
+
+    const modal = new bootstrap.Modal(document.getElementById('modalEditarViaje'));
+    modal.show();
+}
+
+async function guardarEdicionViaje(e) {
+    e.preventDefault();
+    const payload = {
+        folio: document.getElementById('eFolio').value,
+        cliente: document.getElementById('eCliente').value,
+        destino: document.getElementById('eDestino').value,
+        proveedor: document.getElementById('eProveedor').value,
+        totalViaje: document.getElementById('eTotal').value,
+        costoProveedor: document.getElementById('eCosto').value,
+        fechaCliente: document.getElementById('eFechaC').value,
+        fechaProveedor: document.getElementById('eFechaP').value
+    };
+
+    await enviarPost('editarViaje', payload);
+    alert('Viaje actualizado correctamente.');
+    location.reload();
+}
+
+async function eliminarRegistroViaje(folio) {
+    if (confirm(`¿Estás seguro de que deseas eliminar el viaje con folio ${folio}?`)) {
+        await enviarPost('eliminarViaje', { folio: folio });
+        alert('Registro eliminado.');
+        location.reload();
+    }
+}
+
+// --- HISTORIAL Y GENERACIÓN DE TICKET PDF ---
 
 async function verHistorial(folio) {
     document.getElementById('historialFolioText').innerText = folio;
@@ -111,19 +201,26 @@ async function verHistorial(folio) {
     if(data.data.length === 0) {
         html = '<li class="list-group-item p-4 text-center text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>No hay movimientos registrados.</li>';
     } else {
-        data.data.forEach(pago => {
+        data.data.forEach((pago, index) => {
             let esCliente = pago.tipo === 'Cliente';
             let colorMonto = esCliente ? 'text-success' : 'text-warning';
             let etiquetaIcono = esCliente ? 'bi-person-down text-success' : 'bi-building-up text-warning';
             let bgEtiqueta = esCliente ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-dark';
             let signo = esCliente ? '+' : '-';
             
+            // Botón PDF solo para cliente
+            let botonPdf = esCliente ? 
+                `<button class="btn btn-sm btn-outline-primary mt-2" onclick="generarTicketPdf('${pago.folio}', '${pago.cliente}', '${pago.concepto}', '${pago.monto}', '${pago.metodo}', '${pago.fecha}')">
+                    <i class="bi bi-file-earmark-pdf me-1"></i> Ver Ticket PDF
+                </button>` : '';
+
             html += `
             <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
                 <div>
                     <strong class="d-block text-dark">${pago.concepto}</strong>
                     <span class="badge ${bgEtiqueta} border-0 mb-1 rounded-pill"><i class="bi ${etiquetaIcono} me-1"></i>${pago.tipo}</span>
                     <br><small class="text-muted"><i class="bi bi-calendar me-1"></i>${pago.fecha} &bull; <i class="bi bi-credit-card me-1"></i>${pago.metodo}</small>
+                    <br>${botonPdf}
                 </div>
                 <h5 class="mb-0 fw-bold ${colorMonto}">${signo}$${pago.monto}</h5>
             </li>`;
@@ -132,7 +229,61 @@ async function verHistorial(folio) {
     document.getElementById('lista-historial').innerHTML = html;
 }
 
-// Función general para hacer POST
+function generarTicketPdf(folio, cliente, concepto, monto, metodo, fecha) {
+    const ventana = window.open('', '_blank');
+    ventana.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Ticket de Pago - ${folio}</title>
+            <style>
+                body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 30px; color: #333; max-width: 450px; margin: auto; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+                .header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; }
+                .header h2 { margin: 0; color: #2c5364; }
+                .header p { margin: 5px 0 0 0; font-size: 14px; color: #777; }
+                .row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 15px; }
+                .label { color: #666; font-weight: bold; }
+                .value { font-weight: 500; text-align: right; }
+                .total-box { background: #f8f9fa; border-radius: 8px; padding: 15px; text-align: center; margin-top: 20px; }
+                .total-title { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+                .total-amount { font-size: 26px; color: #27ae60; font-weight: bold; margin-top: 5px; }
+                .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #aaa; border-top: 1px solid #eee; padding-top: 15px; }
+                @media print {
+                    body { border: none; box-shadow: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h2>AGENCIA DE VIAJES</h2>
+                <p>Comprobante Oficial de Pago</p>
+            </div>
+            <div class="row"><span class="label">Folio del Viaje:</span><span class="value">${folio}</span></div>
+            <div class="row"><span class="label">Fecha:</span><span class="value">${fecha}</span></div>
+            <div class="row"><span class="label">Cliente:</span><span class="value">${cliente}</span></div>
+            <div class="row"><span class="label">Concepto:</span><span class="value">${concepto}</span></div>
+            <div class="row"><span class="label">Método de Pago:</span><span class="value">${metodo}</span></div>
+            
+            <div class="total-box">
+                <div class="total-title">Monto Recibido</div>
+                <div class="total-amount">$${monto}</div>
+            </div>
+
+            <div class="footer">
+                ¡Gracias por tu preferencia!<br>Conserva este ticket para cualquier aclaración.
+            </div>
+
+            <script>
+                window.onload = function() { window.print(); }
+            </script>
+        </body>
+        </html>
+    `);
+    ventana.document.close();
+}
+
+// --- UTILIDADES POST ---
+
 async function enviarPost(action, payload) {
     const response = await fetch(API_URL, {
         method: 'POST',
