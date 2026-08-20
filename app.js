@@ -1,10 +1,10 @@
-// AQUI PEGA LA URL QUE COPIASTE DE APPS SCRIPT
+// PEGA AQUÍ LA URL COMPLETA DE TU WEB APP DE APPS SCRIPT
 const API_URL = "https://script.google.com/macros/s/AKfycbwIIgViY2Ri6dJ405xN-ypFh0duymToANtfZxDoWUU9GbD6JUxTw2YEGsVPXJYloc56/exec"; 
 
 let viajesData = [];
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Verificar si ya ingresó el PIN previamente
+    // Verificar sesión guardada
     if (sessionStorage.getItem('adminUnlocked') === 'true') {
         mostrarDashboard();
     }
@@ -37,14 +37,28 @@ async function verificarPin(e) {
     e.preventDefault();
     const pin = document.getElementById('inputPin').value;
     const errorEl = document.getElementById('loginError');
+    const btnLogin = document.getElementById('btnLogin');
+    
     errorEl.classList.add('d-none');
+    btnLogin.disabled = true;
+    btnLogin.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verificando...';
 
-    const res = await enviarPost('loginPin', { pin: pin });
-    if (res.success) {
-        sessionStorage.setItem('adminUnlocked', 'true');
-        mostrarDashboard();
-    } else {
+    try {
+        const res = await enviarPost('loginPin', { pin: pin });
+        if (res && res.success) {
+            sessionStorage.setItem('adminUnlocked', 'true');
+            mostrarDashboard();
+        } else {
+            errorEl.innerText = (res && res.error) ? res.error : 'PIN incorrecto. Intenta de nuevo.';
+            errorEl.classList.remove('d-none');
+        }
+    } catch (err) {
+        console.error(err);
+        errorEl.innerText = 'Error de conexión con la base de datos.';
         errorEl.classList.remove('d-none');
+    } finally {
+        btnLogin.disabled = false;
+        btnLogin.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Ingresar';
     }
 }
 
@@ -62,84 +76,93 @@ function cerrarSesion() {
 // --- CARGA DE DATOS ---
 
 async function cargarDatos() {
-    // Cargar Resumen
-    const resResumen = await fetch(`${API_URL}?action=getResumen`);
-    const dataResumen = await resResumen.json();
-    document.getElementById('dashboard-resumen').innerHTML = `
-        <div class="col-md-3 mb-3">
-            <div class="card card-resumen bg-white p-4 h-100 border-start border-4 border-info">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h6 class="text-muted mb-0 fw-bold">VENTAS TOTALES</h6>
-                    <i class="bi bi-graph-up-arrow text-info icon-large"></i>
+    try {
+        // Cargar Resumen
+        const resResumen = await fetch(`${API_URL}?action=getResumen`);
+        const dataResumen = await resResumen.json();
+        
+        document.getElementById('dashboard-resumen').innerHTML = `
+            <div class="col-md-3 mb-3">
+                <div class="card card-resumen bg-white p-4 h-100 border-start border-4 border-info">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-muted mb-0 fw-bold">VENTAS TOTALES</h6>
+                        <i class="bi bi-graph-up-arrow text-info icon-large"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark text-start mb-0">$${dataResumen.ventas || 0}</h3>
                 </div>
-                <h3 class="fw-bold text-dark text-start mb-0">$${dataResumen.ventas}</h3>
             </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card card-resumen bg-white p-4 h-100 border-start border-4 border-success">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h6 class="text-muted mb-0 fw-bold">COBRADO</h6>
-                    <i class="bi bi-wallet2 text-success icon-large"></i>
+            <div class="col-md-3 mb-3">
+                <div class="card card-resumen bg-white p-4 h-100 border-start border-4 border-success">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-muted mb-0 fw-bold">COBRADO</h6>
+                        <i class="bi bi-wallet2 text-success icon-large"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark text-start mb-0">$${dataResumen.recibido || 0}</h3>
                 </div>
-                <h3 class="fw-bold text-dark text-start mb-0">$${dataResumen.recibido}</h3>
             </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card card-resumen bg-white p-4 h-100 border-start border-4 border-warning">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h6 class="text-muted mb-0 fw-bold">PAGADO A PROV.</h6>
-                    <i class="bi bi-send-check text-warning icon-large"></i>
+            <div class="col-md-3 mb-3">
+                <div class="card card-resumen bg-white p-4 h-100 border-start border-4 border-warning">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-muted mb-0 fw-bold">PAGADO A PROV.</h6>
+                        <i class="bi bi-send-check text-warning icon-large"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark text-start mb-0">$${dataResumen.pagado || 0}</h3>
                 </div>
-                <h3 class="fw-bold text-dark text-start mb-0">$${dataResumen.pagado}</h3>
             </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card card-resumen bg-white p-4 h-100 border-start border-4 border-primary">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h6 class="text-muted mb-0 fw-bold">EN CAJA (RETENIDO)</h6>
-                    <i class="bi bi-safe text-primary icon-large"></i>
+            <div class="col-md-3 mb-3">
+                <div class="card card-resumen bg-white p-4 h-100 border-start border-4 border-primary">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-muted mb-0 fw-bold">EN CAJA (RETENIDO)</h6>
+                        <i class="bi bi-safe text-primary icon-large"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark text-start mb-0">$${dataResumen.retenido || 0}</h3>
                 </div>
-                <h3 class="fw-bold text-dark text-start mb-0">$${dataResumen.retenido}</h3>
             </div>
-        </div>
-    `;
+        `;
 
-    // Cargar Viajes
-    const resViajes = await fetch(`${API_URL}?action=getViajes`);
-    const dataViajes = await resViajes.json();
-    viajesData = dataViajes.data;
-    
-    let htmlTabla = '';
-    let htmlOpciones = '<option value="">Selecciona un folio...</option>';
+        // Cargar Viajes
+        const resViajes = await fetch(`${API_URL}?action=getViajes`);
+        const dataViajes = await resViajes.json();
+        viajesData = dataViajes.data || [];
+        
+        let htmlTabla = '';
+        let htmlOpciones = '<option value="">Selecciona un folio...</option>';
 
-    viajesData.forEach(v => {
-        let fCliente = v.fechaCliente ? v.fechaCliente : '-';
-        let fProv = v.fechaProveedor ? v.fechaProveedor : '-';
+        if (viajesData.length === 0) {
+            htmlTabla = `<tr><td colspan="9" class="text-center py-4 text-muted"><i class="bi bi-inbox fs-3 d-block mb-2"></i>No hay registros de viajes activos</td></tr>`;
+        } else {
+            viajesData.forEach(v => {
+                let fCliente = v.fechaCliente ? v.fechaCliente : '-';
+                let fProv = v.fechaProveedor ? v.fechaProveedor : '-';
 
-        htmlTabla += `
-            <tr class="clickable-row" ondblclick="verHistorial('${v.folio}')">
-                <td class="fw-bold text-primary">${v.folio}</td>
-                <td class="fw-semibold">${v.cliente}</td>
-                <td><i class="bi bi-geo-alt text-danger me-1"></i>${v.destino}</td>
-                <td class="text-secondary">$${v.totalViaje}</td>
-                <td class="text-danger fw-bold">$${v.faltaPagar}</td>
-                <td class="text-warning fw-bold">$${v.saldoProveedor}</td>
-                <td class="small text-muted"><i class="bi bi-calendar3 me-1"></i>${fCliente}</td>
-                <td class="small text-muted"><i class="bi bi-calendar3 me-1"></i>${fProv}</td>
-                <td class="text-center" onclick="event.stopPropagation()">
-                    <button class="btn btn-sm btn-outline-warning me-1" title="Editar" onclick="abrirEditarModal('${v.folio}')">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger" title="Eliminar" onclick="eliminarRegistroViaje('${v.folio}')">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </td>
-            </tr>`;
-        htmlOpciones += `<option value="${v.folio}">${v.folio} - ${v.cliente}</option>`;
-    });
+                htmlTabla += `
+                    <tr class="clickable-row" ondblclick="verHistorial('${v.folio}')">
+                        <td class="fw-bold text-primary">${v.folio}</td>
+                        <td class="fw-semibold">${v.cliente}</td>
+                        <td><i class="bi bi-geo-alt text-danger me-1"></i>${v.destino}</td>
+                        <td class="text-secondary">$${v.totalViaje}</td>
+                        <td class="text-danger fw-bold">$${v.faltaPagar}</td>
+                        <td class="text-warning fw-bold">$${v.saldoProveedor}</td>
+                        <td class="small text-muted"><i class="bi bi-calendar3 me-1"></i>${fCliente}</td>
+                        <td class="small text-muted"><i class="bi bi-calendar3 me-1"></i>${fProv}</td>
+                        <td class="text-center" onclick="event.stopPropagation()">
+                            <button class="btn btn-sm btn-outline-warning me-1" title="Editar" onclick="abrirEditarModal('${v.folio}')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" title="Eliminar" onclick="eliminarRegistroViaje('${v.folio}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                htmlOpciones += `<option value="${v.folio}">${v.folio} - ${v.cliente}</option>`;
+            });
+        }
 
-    document.getElementById('tabla-viajes').innerHTML = htmlTabla;
-    document.querySelectorAll('.select-folios').forEach(el => el.innerHTML = htmlOpciones);
+        document.getElementById('tabla-viajes').innerHTML = htmlTabla;
+        document.querySelectorAll('.select-folios').forEach(el => el.innerHTML = htmlOpciones);
+    } catch (e) {
+        console.error("Error cargando los datos:", e);
+    }
 }
 
 // --- EDICIÓN Y ELIMINACIÓN ---
@@ -198,17 +221,16 @@ async function verHistorial(folio) {
     const data = await res.json();
     
     let html = '';
-    if(data.data.length === 0) {
+    if(!data.data || data.data.length === 0) {
         html = '<li class="list-group-item p-4 text-center text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>No hay movimientos registrados.</li>';
     } else {
-        data.data.forEach((pago, index) => {
+        data.data.forEach((pago) => {
             let esCliente = pago.tipo === 'Cliente';
             let colorMonto = esCliente ? 'text-success' : 'text-warning';
             let etiquetaIcono = esCliente ? 'bi-person-down text-success' : 'bi-building-up text-warning';
             let bgEtiqueta = esCliente ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-dark';
             let signo = esCliente ? '+' : '-';
             
-            // Botón PDF solo para cliente
             let botonPdf = esCliente ? 
                 `<button class="btn btn-sm btn-outline-primary mt-2" onclick="generarTicketPdf('${pago.folio}', '${pago.cliente}', '${pago.concepto}', '${pago.monto}', '${pago.metodo}', '${pago.fecha}')">
                     <i class="bi bi-file-earmark-pdf me-1"></i> Ver Ticket PDF
