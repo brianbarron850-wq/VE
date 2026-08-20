@@ -101,7 +101,7 @@
         .nav-tabs .nav-link.active {
             color: var(--ve-teal-dark);
             background-color: #FFFFFF;
-            border-bottom: 3.5 solid var(--ve-sand);
+            border-bottom: 3.5px solid var(--ve-sand);
             box-shadow: 0 -4px 15px rgba(0,0,0,0.03);
         }
 
@@ -162,7 +162,7 @@
         .modal-content { border-radius: 22px; border: none; }
         .modal-header { border-bottom: 2px solid #F0ECE1; background-color: #F8F6F0; border-radius: 22px 22px 0 0; }
         
-        /* Custom Logo Component SVG */
+        /* Custom Logo Component */
         .brand-logo-container {
             display: inline-flex;
             align-items: center;
@@ -175,20 +175,9 @@
 <!-- Vista de Acceso con PIN -->
 <div id="login-screen">
     <div class="pin-card">
-        <!-- Logo SVG Vania Escapes en Login -->
-        <div class="mb-3">
-            <svg width="110" height="110" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="100" cy="100" r="90" stroke="#C5AA83" stroke-width="5"/>
-                <circle cx="100" cy="100" r="78" stroke="#5B8A88" stroke-width="4" stroke-dasharray="8 4"/>
-                <!-- Brújula Estrella -->
-                <path d="M100 25 L112 88 L175 100 L112 112 L100 175 L88 112 L25 100 L88 88 Z" fill="#5B8A88"/>
-                <path d="M100 25 L100 100 L175 100 Z" fill="#C5AA83" opacity="0.8"/>
-                <path d="M100 175 L100 100 L25 100 Z" fill="#7A9F9C" opacity="0.8"/>
-                <!-- Ola de Mar abajo -->
-                <path d="M30 135 C 60 115, 90 155, 120 135 C 150 115, 170 135, 170 135 C 170 135, 150 165, 100 165 C 50 165, 30 135, 30 135 Z" fill="#5B8A88" opacity="0.9"/>
-                <!-- Nube arriba derecha -->
-                <path d="M130 55 C 130 48, 140 45, 148 50 C 153 45, 163 50, 162 56 C 167 58, 166 66, 160 66 L 130 66 C 125 66, 125 57, 130 55 Z" fill="#C5AA83"/>
-            </svg>
+        <!-- Reemplazo SVG por Imagen Adjunta (Req 1) -->
+        <div class="mb-3 d-flex justify-content-center">
+            <img src="image_c1a92e.jpg" alt="Logo Vania Escapes" width="140" style="object-fit: contain;">
         </div>
         <h3 class="fw-bold mb-1 brand-font" style="color: var(--ve-teal-dark);">VANIA ESCAPES</h3>
         <p class="tagline mb-4">TU VIAJE SEGURO, TU MENTE TRANQUILA</p>
@@ -216,13 +205,10 @@
             </button>
             
             <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
-                <!-- SVG Icon Logo Mini -->
-                <svg width="60" height="60" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="100" cy="100" r="90" stroke="#C5AA83" stroke-width="8"/>
-                    <path d="M100 25 L112 88 L175 100 L112 112 L100 175 L88 112 L25 100 L88 88 Z" fill="#FFFFFF"/>
-                    <path d="M100 25 L100 100 L175 100 Z" fill="#C5AA83"/>
-                    <path d="M30 135 C 60 115, 90 155, 120 135 C 150 115, 170 135, 170 135 C 170 135, 150 165, 100 165 C 50 165, 30 135, 30 135 Z" fill="#7A9F9C"/>
-                </svg>
+                <!-- Reemplazo SVG por Imagen Adjunta (Req 1) -->
+                <div class="bg-white rounded-circle p-1 shadow-sm d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                    <img src="image_c1a92e.jpg" alt="Logo Vania Escapes" width="60" style="object-fit: contain;">
+                </div>
                 <div class="text-start">
                     <h1 class="fw-bold mb-0 brand-font" style="letter-spacing: 2px; font-size: 2.2rem;">VANIA ESCAPES</h1>
                     <span class="tagline text-white opacity-90" style="letter-spacing: 3px;">TU VIAJE SEGURO, TU MENTE TRANQUILA</span>
@@ -239,10 +225,16 @@
         </div>
 
         <!-- Pestañas de Navegación -->
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <ul class="nav nav-tabs flex-wrap" id="myTab" role="tablist">
           <li class="nav-item" role="presentation">
             <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#viajes" type="button" role="tab">
-                <i class="bi bi-compass me-2"></i>Control de Viajes
+                <i class="bi bi-compass me-2"></i>Control de Viajes (Pendientes)
+            </button>
+          </li>
+          <!-- Pestaña Viajes Completados (Req 3) -->
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#completados" type="button" role="tab">
+                <i class="bi bi-check2-all me-2"></i>Viajes Completados
             </button>
           </li>
           <li class="nav-item" role="presentation">
@@ -255,15 +247,21 @@
                 <i class="bi bi-building-up me-2"></i>Pagar a Proveedor
             </button>
           </li>
+          <!-- Pestaña Proveedores (Req 5) -->
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#proveedores" type="button" role="tab">
+                <i class="bi bi-people me-2"></i>Proveedores
+            </button>
+          </li>
         </ul>
 
         <div class="tab-content p-4 p-md-5 mb-5">
             
-            <!-- Pestaña: Control de Pagos -->
+            <!-- Pestaña: Control de Pagos PENDIENTES -->
             <div class="tab-pane fade show active" id="viajes" role="tabpanel">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                     <h4 class="fw-bold mb-0 brand-font" style="color: var(--ve-teal-dark);">
-                        <i class="bi bi-journal-bookmark me-2" style="color: var(--ve-sand);"></i>Registros de Viajes
+                        <i class="bi bi-journal-bookmark me-2" style="color: var(--ve-sand);"></i>Registros de Viajes Pendientes
                     </h4>
                     <button class="btn btn-ve-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoViaje">
                         <i class="bi bi-plus-lg me-1"></i> Aperturar Viaje
@@ -290,7 +288,39 @@
                         </tbody>
                     </table>
                     <div class="text-muted mt-3 small">
-                        <i class="bi bi-info-circle me-1" style="color: var(--ve-sand);"></i> Haz doble clic en una fila para consultar el historial completo de pagos y tickets PDF.
+                        <i class="bi bi-info-circle me-1" style="color: var(--ve-sand);"></i> Haz doble clic en una fila para consultar el historial completo de pagos y tickets PDF. Los viajes liquidados se mueven a Completados.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pestaña: Viajes Completados (Req 3 y 4) -->
+            <div class="tab-pane fade" id="completados" role="tabpanel">
+                <div class="mb-4">
+                    <h4 class="fw-bold mb-0 brand-font" style="color: var(--ve-teal-dark);">
+                        <i class="bi bi-archive me-2" style="color: var(--ve-sand);"></i>Viajes Completados y Cancelados
+                    </h4>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Folio</th>
+                                <th>Cliente</th>
+                                <th>Destino</th>
+                                <th>Venta Total</th>
+                                <th>Saldo Cliente</th>
+                                <th>Saldo Prov.</th>
+                                <th>Límite Cliente</th>
+                                <th>Límite Prov.</th>
+                                <th class="text-center">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-viajes-completados">
+                            <!-- Se llena con JS -->
+                        </tbody>
+                    </table>
+                    <div class="text-muted mt-3 small">
+                        <i class="bi bi-info-circle me-1" style="color: var(--ve-sand);"></i> Haz doble clic para consultar el historial de movimientos de estos viajes.
                     </div>
                 </div>
             </div>
@@ -302,7 +332,7 @@
                 </h4>
                 <form id="formCobro" class="row g-4">
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">Folio del Viaje</label>
+                        <label class="form-label fw-semibold">Folio del Viaje (Pendientes)</label>
                         <select class="form-select select-folios" id="cobroFolio" required></select>
                     </div>
                     <div class="col-md-4">
@@ -342,7 +372,7 @@
                 </h4>
                 <form id="formPagoProv" class="row g-4">
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">Folio del Viaje</label>
+                        <label class="form-label fw-semibold">Folio del Viaje (Pendientes)</label>
                         <select class="form-select select-folios" id="provFolio" required></select>
                     </div>
                     <div class="col-md-4">
@@ -373,6 +403,34 @@
                     </div>
                 </form>
             </div>
+            
+            <!-- Pestaña: Proveedores (Req 5) -->
+            <div class="tab-pane fade" id="proveedores" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                    <h4 class="fw-bold mb-0 brand-font" style="color: var(--ve-teal-dark);">
+                        <i class="bi bi-people me-2" style="color: var(--ve-sand);"></i>Directorio de Proveedores
+                    </h4>
+                    <button class="btn btn-ve-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoProveedor">
+                        <i class="bi bi-person-plus me-1"></i> Nuevo Proveedor
+                    </button>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Nombre Operador / Proveedor</th>
+                                <th>Teléfono</th>
+                                <th>Correo de Contacto</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-proveedores">
+                            <!-- Se llena con JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
         </div>
     </div>
@@ -393,7 +451,11 @@
             <div class="col-md-4"><label class="form-label text-muted small mb-1">ID / Folio</label><input type="text" id="vFolio" class="form-control" placeholder="Ej. VE-101" required></div>
             <div class="col-md-8"><label class="form-label text-muted small mb-1">Nombre Completo del Cliente</label><input type="text" id="vCliente" class="form-control" placeholder="Nombre de cliente" required></div>
             <div class="col-md-6"><label class="form-label text-muted small mb-1">Destino</label><input type="text" id="vDestino" class="form-control" placeholder="Ej. Cancún, México" required></div>
-            <div class="col-md-6"><label class="form-label text-muted small mb-1">Proveedor / Mayorista</label><input type="text" id="vProveedor" class="form-control" placeholder="Nombre de operador" required></div>
+            <div class="col-md-6">
+                <label class="form-label text-muted small mb-1">Proveedor / Mayorista</label>
+                <!-- Select conectado a DB de Proveedores -->
+                <select id="vProveedor" class="form-select select-proveedor" required></select>
+            </div>
             <div class="col-md-6"><label class="form-label text-muted small mb-1">Precio Total Venta (Cliente)</label>
                 <div class="input-group"><span class="input-group-text">$</span><input type="number" id="vTotal" class="form-control" required></div>
             </div>
@@ -430,7 +492,10 @@
             <div class="col-md-4"><label class="form-label text-muted small mb-1">Folio (No modificable)</label><input type="text" id="eFolio" class="form-control bg-light" readonly></div>
             <div class="col-md-8"><label class="form-label text-muted small mb-1">Nombre del Cliente</label><input type="text" id="eCliente" class="form-control" required></div>
             <div class="col-md-6"><label class="form-label text-muted small mb-1">Destino</label><input type="text" id="eDestino" class="form-control" required></div>
-            <div class="col-md-6"><label class="form-label text-muted small mb-1">Proveedor</label><input type="text" id="eProveedor" class="form-control" required></div>
+            <div class="col-md-6">
+                <label class="form-label text-muted small mb-1">Proveedor</label>
+                <select id="eProveedor" class="form-select select-proveedor" required></select>
+            </div>
             <div class="col-md-6"><label class="form-label text-muted small mb-1">Precio Total (Venta)</label>
                 <div class="input-group"><span class="input-group-text">$</span><input type="number" id="eTotal" class="form-control" required></div>
             </div>
@@ -451,6 +516,52 @@
     </div>
   </div>
 </div>
+
+<!-- Modal Nuevo Proveedor -->
+<div class="modal fade" id="modalNuevoProveedor" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg">
+      <div class="modal-header pt-4 px-4">
+        <h5 class="modal-title fw-bold brand-font" style="color: var(--ve-teal-dark);">
+            <i class="bi bi-person-plus me-2" style="color: var(--ve-sand);"></i>Agregar Proveedor
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="formNuevoProveedor" class="row g-3">
+            <div class="col-12"><label class="form-label text-muted small mb-1">Nombre Proveedor</label><input type="text" id="pNombre" class="form-control" required></div>
+            <div class="col-12"><label class="form-label text-muted small mb-1">Teléfono</label><input type="text" id="pTelefono" class="form-control"></div>
+            <div class="col-12"><label class="form-label text-muted small mb-1">Correo Electrónico</label><input type="email" id="pCorreo" class="form-control"></div>
+            <div class="col-12 mt-4"><button type="submit" class="btn btn-ve-primary w-100 py-2.5"><i class="bi bi-cloud-arrow-up me-2"></i>Guardar Proveedor</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Proveedor -->
+<div class="modal fade" id="modalEditarProveedor" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg">
+      <div class="modal-header pt-4 px-4">
+        <h5 class="modal-title fw-bold brand-font" style="color: var(--ve-teal-dark);">
+            <i class="bi bi-pencil me-2" style="color: var(--ve-sand);"></i>Editar Proveedor
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="formEditarProveedor" class="row g-3">
+            <input type="hidden" id="epId">
+            <div class="col-12"><label class="form-label text-muted small mb-1">Nombre Proveedor</label><input type="text" id="epNombre" class="form-control" required></div>
+            <div class="col-12"><label class="form-label text-muted small mb-1">Teléfono</label><input type="text" id="epTelefono" class="form-control"></div>
+            <div class="col-12"><label class="form-label text-muted small mb-1">Correo Electrónico</label><input type="email" id="epCorreo" class="form-control"></div>
+            <div class="col-12 mt-4"><button type="submit" class="btn btn-ve-sand w-100 py-2.5"><i class="bi bi-save me-2"></i>Guardar Cambios</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <!-- Modal Historial Pagos -->
 <div class="modal fade" id="modalHistorial" tabindex="-1">
