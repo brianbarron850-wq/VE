@@ -2,6 +2,7 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbwIIgViY2Ri6dJ405xN-ypFh0duymToANtfZxDoWUU9GbD6JUxTw2YEGsVPXJYloc56/exec"; 
 
 let viajesData = [];
+let proveedoresData = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     // Verificar sesión previa
@@ -12,11 +13,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // Event Listener para Login
     document.getElementById('formLogin').addEventListener('submit', verificarPin);
 
-    // Event Listeners para formularios
+    // Event Listeners para formularios de viajes
     document.getElementById('formNuevoViaje').addEventListener('submit', guardarNuevoViaje);
     document.getElementById('formEditarViaje').addEventListener('submit', guardarEdicionViaje);
     document.getElementById('formCobro').addEventListener('submit', guardarPagoCliente);
     document.getElementById('formPagoProv').addEventListener('submit', guardarPagoProveedor);
+    
+    // Event Listeners para Proveedores
+    document.getElementById('formNuevoProveedor').addEventListener('submit', guardarNuevoProveedor);
+    document.getElementById('formEditarProveedor').addEventListener('submit', guardarEdicionProveedor);
 
     // Auto-completar cliente al seleccionar folio
     document.querySelectorAll('.select-folios').forEach(select => {
@@ -89,6 +94,7 @@ function mostrarDashboard() {
     document.getElementById('login-screen').classList.add('d-none');
     document.getElementById('app-content').classList.remove('d-none');
     cargarDatos();
+    cargarProveedores();
 }
 
 function cerrarSesion() {
@@ -148,47 +154,97 @@ async function cargarDatos() {
         const dataViajes = await resViajes.json();
         viajesData = dataViajes.data || [];
         
-        let htmlTabla = '';
+        let htmlPendientes = '';
+        let htmlCompletados = '';
         let htmlOpciones = '<option value="">Selecciona un folio...</option>';
 
-        if (viajesData.length === 0) {
-            htmlTabla = `<tr><td colspan="9" class="text-center py-4 text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>No hay registros de viajes activos</td></tr>`;
-        } else {
-            viajesData.forEach(v => {
-                let fCliente = v.fechaCliente ? v.fechaCliente : '-';
-                let fProv = v.fechaProveedor ? v.fechaProveedor : '-';
+        viajesData.forEach(v => {
+            let fCliente = v.fechaCliente ? v.fechaCliente : '-';
+            let fProv = v.fechaProveedor ? v.fechaProveedor : '-';
+            
+            // Fila de tabla
+            let fila = `
+                <tr class="clickable-row" ondblclick="verHistorial('${v.folio}')">
+                    <td class="fw-bold" style="color: var(--ve-teal);">${v.folio}</td>
+                    <td class="fw-semibold">${v.cliente}</td>
+                    <td><i class="bi bi-geo-alt me-1" style="color: var(--ve-sand);"></i>${v.destino}</td>
+                    <td class="text-secondary">$${v.totalViaje}</td>
+                    <td class="text-danger fw-bold">$${v.faltaPagar}</td>
+                    <td class="fw-bold" style="color: var(--ve-sand);">$${v.saldoProveedor}</td>
+                    <td class="small text-muted"><i class="bi bi-calendar3 me-1"></i>${fCliente}</td>
+                    <td class="small text-muted"><i class="bi bi-calendar3 me-1"></i>${fProv}</td>
+                    <td class="text-center" onclick="event.stopPropagation()">
+                        ${v.estado === 'Pendiente' ? `
+                        <button class="btn btn-sm btn-outline-warning me-1 mb-1" title="Editar" onclick="abrirEditarModal('${v.folio}')">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary me-1 mb-1" title="Cancelar Viaje" onclick="cancelarRegistroViaje('${v.folio}')">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger mb-1" title="Eliminar" onclick="eliminarRegistroViaje('${v.folio}')">
+                            <i class="bi bi-trash"></i>
+                        </button>` : `<span class="badge ${v.estado === 'Cancelado' ? 'bg-danger' : 'bg-success'}">${v.estado}</span>`}
+                    </td>
+                </tr>`;
 
-                htmlTabla += `
-                    <tr class="clickable-row" ondblclick="verHistorial('${v.folio}')">
-                        <td class="fw-bold" style="color: var(--ve-teal);">${v.folio}</td>
-                        <td class="fw-semibold">${v.cliente}</td>
-                        <td><i class="bi bi-geo-alt me-1" style="color: var(--ve-sand);"></i>${v.destino}</td>
-                        <td class="text-secondary">$${v.totalViaje}</td>
-                        <td class="text-danger fw-bold">$${v.faltaPagar}</td>
-                        <td class="fw-bold" style="color: var(--ve-sand);">$${v.saldoProveedor}</td>
-                        <td class="small text-muted"><i class="bi bi-calendar3 me-1"></i>${fCliente}</td>
-                        <td class="small text-muted"><i class="bi bi-calendar3 me-1"></i>${fProv}</td>
-                        <td class="text-center" onclick="event.stopPropagation()">
-                            <button class="btn btn-sm btn-outline-warning me-1" title="Editar" onclick="abrirEditarModal('${v.folio}')">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" title="Eliminar" onclick="eliminarRegistroViaje('${v.folio}')">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>`;
+            if (v.estado === 'Pendiente') {
+                htmlPendientes += fila;
                 htmlOpciones += `<option value="${v.folio}">${v.folio} - ${v.cliente}</option>`;
-            });
-        }
+            } else {
+                htmlCompletados += fila;
+            }
+        });
 
-        document.getElementById('tabla-viajes').innerHTML = htmlTabla;
+        if (htmlPendientes === '') htmlPendientes = `<tr><td colspan="9" class="text-center py-4 text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>No hay registros de viajes pendientes</td></tr>`;
+        if (htmlCompletados === '') htmlCompletados = `<tr><td colspan="9" class="text-center py-4 text-muted"><i class="bi bi-check-circle fs-2 d-block mb-2"></i>No hay viajes completados ni cancelados</td></tr>`;
+
+        document.getElementById('tabla-viajes').innerHTML = htmlPendientes;
+        document.getElementById('tabla-viajes-completados').innerHTML = htmlCompletados;
         document.querySelectorAll('.select-folios').forEach(el => el.innerHTML = htmlOpciones);
     } catch (e) {
         console.error("Error cargando datos:", e);
     }
 }
 
-// --- EDICIÓN Y ELIMINACIÓN ---
+async function cargarProveedores() {
+    try {
+        const res = await fetch(`${API_URL}?action=getProveedores`);
+        const data = await res.json();
+        proveedoresData = data.data || [];
+        
+        let htmlTabla = '';
+        let htmlSelect = '<option value="">Selecciona un proveedor...</option>';
+
+        if (proveedoresData.length === 0) {
+            htmlTabla = `<tr><td colspan="4" class="text-center py-4 text-muted">No hay proveedores registrados</td></tr>`;
+        } else {
+            proveedoresData.forEach(p => {
+                htmlTabla += `
+                    <tr>
+                        <td class="fw-bold">${p.nombre}</td>
+                        <td>${p.telefono}</td>
+                        <td>${p.correo}</td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-warning me-1" title="Editar" onclick="abrirEditarProveedor('${p.id}')"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" title="Eliminar" onclick="eliminarProveedor('${p.id}')"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>`;
+                htmlSelect += `<option value="${p.nombre}">${p.nombre}</option>`;
+            });
+        }
+        
+        document.getElementById('tabla-proveedores').innerHTML = htmlTabla;
+        
+        // Llenar selects de proveedores en los modales de viaje
+        const selectsProv = document.querySelectorAll('.select-proveedor');
+        selectsProv.forEach(select => select.innerHTML = htmlSelect);
+
+    } catch(e) {
+        console.error("Error cargando proveedores:", e);
+    }
+}
+
+// --- EDICIÓN, CANCELACIÓN Y ELIMINACIÓN DE VIAJES ---
 
 function abrirEditarModal(folio) {
     const viaje = viajesData.find(v => v.folio == folio);
@@ -225,13 +281,70 @@ async function guardarEdicionViaje(e) {
     location.reload();
 }
 
+async function cancelarRegistroViaje(folio) {
+    if (confirm(`¿Estás seguro de que deseas CANCELAR el viaje con folio ${folio}?`)) {
+        await enviarPost('cancelarViaje', { folio: folio });
+        alert('Viaje marcado como cancelado.');
+        location.reload();
+    }
+}
+
 async function eliminarRegistroViaje(folio) {
-    if (confirm(`¿Estás seguro de que deseas eliminar el viaje con folio ${folio}?`)) {
+    if (confirm(`¿Estás seguro de que deseas ELIMINAR permanentemente el viaje con folio ${folio}?`)) {
         await enviarPost('eliminarViaje', { folio: folio });
         alert('Registro eliminado.');
         location.reload();
     }
 }
+
+// --- CRUD PROVEEDORES ---
+
+async function guardarNuevoProveedor(e) {
+    e.preventDefault();
+    const payload = {
+        nombre: document.getElementById('pNombre').value,
+        telefono: document.getElementById('pTelefono').value,
+        correo: document.getElementById('pCorreo').value
+    };
+    await enviarPost('nuevoProveedor', payload);
+    alert('Proveedor guardado exitosamente.');
+    location.reload();
+}
+
+function abrirEditarProveedor(id) {
+    const prov = proveedoresData.find(p => p.id == id);
+    if (!prov) return;
+    
+    document.getElementById('epId').value = prov.id;
+    document.getElementById('epNombre').value = prov.nombre;
+    document.getElementById('epTelefono').value = prov.telefono;
+    document.getElementById('epCorreo').value = prov.correo;
+    
+    const modal = new bootstrap.Modal(document.getElementById('modalEditarProveedor'));
+    modal.show();
+}
+
+async function guardarEdicionProveedor(e) {
+    e.preventDefault();
+    const payload = {
+        id: document.getElementById('epId').value,
+        nombre: document.getElementById('epNombre').value,
+        telefono: document.getElementById('epTelefono').value,
+        correo: document.getElementById('epCorreo').value
+    };
+    await enviarPost('editarProveedor', payload);
+    alert('Proveedor actualizado.');
+    location.reload();
+}
+
+async function eliminarProveedor(id) {
+    if (confirm(`¿Deseas eliminar a este proveedor?`)) {
+        await enviarPost('eliminarProveedor', { id: id });
+        alert('Proveedor eliminado.');
+        location.reload();
+    }
+}
+
 
 // --- HISTORIAL Y TICKET PDF BRANDED (VANIA ESCAPES) ---
 
@@ -329,13 +442,9 @@ function generarTicketPdf(folio, cliente, concepto, monto, metodo, fecha) {
         <body>
             <div class="ticket-card">
                 <div class="header">
-                    <!-- SVG Logo Vania Escapes en Ticket -->
-                    <svg width="60" height="60" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="100" cy="100" r="90" stroke="#C5AA83" stroke-width="6"/>
-                        <path d="M100 25 L112 88 L175 100 L112 112 L100 175 L88 112 L25 100 L88 88 Z" fill="#5B8A88"/>
-                        <path d="M100 25 L100 100 L175 100 Z" fill="#C5AA83" opacity="0.8"/>
-                        <path d="M30 135 C 60 115, 90 155, 120 135 C 150 115, 170 135, 170 135 C 170 135, 150 165, 100 165 C 50 165, 30 135, 30 135 Z" fill="#5B8A88"/>
-                    </svg>
+                    <!-- LOGO ADJUNTO REQUERIDO -->
+                    <img src="image_c1a92e.jpg" alt="Vania Escapes" style="width: 140px; display: block; margin: 0 auto 10px auto; object-fit: contain;">
+                    
                     <div class="brand-title">VANIA ESCAPES</div>
                     <div class="tagline">TU VIAJE SEGURO, TU MENTE TRANQUILA</div>
                     <div class="subtitle">Comprobante Oficial de Pago</div>
@@ -358,7 +467,10 @@ function generarTicketPdf(folio, cliente, concepto, monto, metodo, fecha) {
             </div>
 
             <script>
-                window.onload = function() { window.print(); }
+                // Se da un pequeño tiempo de carga para asegurar que la imagen renderice antes de imprimir
+                window.onload = function() { 
+                    setTimeout(function() { window.print(); }, 500);
+                }
             </script>
         </body>
         </html>
