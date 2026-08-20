@@ -162,7 +162,6 @@
         .modal-content { border-radius: 22px; border: none; }
         .modal-header { border-bottom: 2px solid #F0ECE1; background-color: #F8F6F0; border-radius: 22px 22px 0 0; }
         
-        /* Custom Logo Component */
         .brand-logo-container {
             display: inline-flex;
             align-items: center;
@@ -175,9 +174,13 @@
 <!-- Vista de Acceso con PIN -->
 <div id="login-screen">
     <div class="pin-card">
-        <!-- Reemplazo SVG por Imagen Adjunta (Req 1) -->
-        <div class="mb-3 d-flex justify-content-center">
-            <img src="image_c1a92e.jpg" alt="Logo Vania Escapes" width="140" style="object-fit: contain;">
+        <!-- Logo SVG vectorial integrado que nunca falla -->
+        <div class="brand-logo-container mb-3">
+            <svg width="90" height="90" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="48" fill="#5B8A88" stroke="#C5AA83" stroke-width="3"/>
+                <path d="M50 20 L58 42 L80 50 L58 58 L50 80 L42 58 L20 50 L42 42 Z" fill="#C5AA83"/>
+                <circle cx="50" cy="50" r="8" fill="#2D4341"/>
+            </svg>
         </div>
         <h3 class="fw-bold mb-1 brand-font" style="color: var(--ve-teal-dark);">VANIA ESCAPES</h3>
         <p class="tagline mb-4">TU VIAJE SEGURO, TU MENTE TRANQUILA</p>
@@ -205,9 +208,13 @@
             </button>
             
             <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
-                <!-- Reemplazo SVG por Imagen Adjunta (Req 1) -->
+                <!-- Logo SVG en Header -->
                 <div class="bg-white rounded-circle p-1 shadow-sm d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
-                    <img src="image_c1a92e.jpg" alt="Logo Vania Escapes" width="60" style="object-fit: contain;">
+                    <svg width="55" height="55" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="50" r="48" fill="#5B8A88" stroke="#C5AA83" stroke-width="3"/>
+                        <path d="M50 20 L58 42 L80 50 L58 58 L50 80 L42 58 L20 50 L42 42 Z" fill="#C5AA83"/>
+                        <circle cx="50" cy="50" r="8" fill="#2D4341"/>
+                    </svg>
                 </div>
                 <div class="text-start">
                     <h1 class="fw-bold mb-0 brand-font" style="letter-spacing: 2px; font-size: 2.2rem;">VANIA ESCAPES</h1>
@@ -231,7 +238,6 @@
                 <i class="bi bi-compass me-2"></i>Control de Viajes (Pendientes)
             </button>
           </li>
-          <!-- Pestaña Viajes Completados (Req 3) -->
           <li class="nav-item" role="presentation">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#completados" type="button" role="tab">
                 <i class="bi bi-check2-all me-2"></i>Viajes Completados
@@ -247,7 +253,6 @@
                 <i class="bi bi-building-up me-2"></i>Pagar a Proveedor
             </button>
           </li>
-          <!-- Pestaña Proveedores (Req 5) -->
           <li class="nav-item" role="presentation">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#proveedores" type="button" role="tab">
                 <i class="bi bi-people me-2"></i>Proveedores
@@ -293,7 +298,7 @@
                 </div>
             </div>
 
-            <!-- Pestaña: Viajes Completados (Req 3 y 4) -->
+            <!-- Pestaña: Viajes Completados -->
             <div class="tab-pane fade" id="completados" role="tabpanel">
                 <div class="mb-4">
                     <h4 class="fw-bold mb-0 brand-font" style="color: var(--ve-teal-dark);">
@@ -404,7 +409,7 @@
                 </form>
             </div>
             
-            <!-- Pestaña: Proveedores (Req 5) -->
+            <!-- Pestaña: Proveedores -->
             <div class="tab-pane fade" id="proveedores" role="tabpanel">
                 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                     <h4 class="fw-bold mb-0 brand-font" style="color: var(--ve-teal-dark);">
@@ -453,7 +458,6 @@
             <div class="col-md-6"><label class="form-label text-muted small mb-1">Destino</label><input type="text" id="vDestino" class="form-control" placeholder="Ej. Cancún, México" required></div>
             <div class="col-md-6">
                 <label class="form-label text-muted small mb-1">Proveedor / Mayorista</label>
-                <!-- Select conectado a DB de Proveedores -->
                 <select id="vProveedor" class="form-select select-proveedor" required></select>
             </div>
             <div class="col-md-6"><label class="form-label text-muted small mb-1">Precio Total Venta (Cliente)</label>
@@ -561,7 +565,6 @@
     </div>
   </div>
 </div>
-
 
 <!-- Modal Historial Pagos -->
 <div class="modal fade" id="modalHistorial" tabindex="-1">
