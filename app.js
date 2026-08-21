@@ -18,10 +18,22 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('formEditarViaje').addEventListener('submit', guardarEdicionViaje);
     document.getElementById('formCobro').addEventListener('submit', guardarPagoCliente);
     document.getElementById('formPagoProv').addEventListener('submit', guardarPagoProveedor);
+    document.getElementById('formEditarPago').addEventListener('submit', guardarEdicionPago);
     
     // Event Listeners para Proveedores
     document.getElementById('formNuevoProveedor').addEventListener('submit', guardarNuevoProveedor);
     document.getElementById('formEditarProveedor').addEventListener('submit', guardarEdicionProveedor);
+
+    // Buscadores (Filtros)
+    document.getElementById('buscarPendientes').addEventListener('input', function() {
+        filtrarTabla('tabla-viajes', this.value);
+    });
+    document.getElementById('buscarCompletados').addEventListener('input', function() {
+        filtrarTabla('tabla-viajes-completados', this.value);
+    });
+    document.getElementById('buscarProveedores').addEventListener('input', function() {
+        filtrarTabla('tabla-proveedores', this.value);
+    });
 
     // Auto-completar cliente al seleccionar folio
     document.querySelectorAll('.select-folios').forEach(select => {
@@ -35,6 +47,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 });
+
+// --- LÓGICA DE FILTRADO ---
+function filtrarTabla(idTabla, texto) {
+    const filas = document.getElementById(idTabla).getElementsByTagName('tr');
+    const filtro = texto.toLowerCase();
+    for (let i = 0; i < filas.length; i++) {
+        const contenido = filas[i].textContent.toLowerCase();
+        filas[i].style.display = contenido.includes(filtro) ? '' : 'none';
+    }
+}
 
 function formatoFechaLimpia(strFecha) {
     if (!strFecha) return "";
@@ -357,7 +379,7 @@ async function eliminarProveedor(id) {
     }
 }
 
-// --- HISTORIAL Y TICKET PDF BRANDED (VANIA ESCAPES) ---
+// --- HISTORIAL, EDICIÓN DE PAGOS Y TICKET PDF ---
 
 async function verHistorial(folio) {
     document.getElementById('historialFolioText').innerText = folio;
@@ -380,9 +402,17 @@ async function verHistorial(folio) {
             let signo = esCliente ? '+' : '-';
             
             let botonPdf = esCliente ? 
-                `<button class="btn btn-sm btn-outline-primary mt-2" onclick="generarTicketPdf('${pago.folio}', '${pago.cliente}', '${pago.concepto}', '${pago.monto}', '${pago.metodo}', '${pago.fecha}')">
+                `<button class="btn btn-sm btn-outline-primary mt-2 me-1" onclick="generarTicketPdf('${pago.folio}', '${pago.cliente}', '${pago.concepto}', '${pago.monto}', '${pago.metodo}', '${pago.fecha}')">
                     <i class="bi bi-file-earmark-pdf me-1"></i> Ver Ticket PDF
                 </button>` : '';
+
+            // Botones añadidos para editar o eliminar pago
+            let botonesAccion = `
+                <div class="mt-2 text-end">
+                    <button class="btn btn-sm btn-outline-warning py-0 px-2 me-1" onclick="abrirEditarPago('${pago.tipo}', ${pago.fila}, '${pago.folio}', '${pago.concepto}', ${pago.monto}, '${pago.metodo}')" title="Editar Pago"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="eliminarPagoRegistro('${pago.tipo}', ${pago.fila}, '${pago.folio}')" title="Eliminar Pago"><i class="bi bi-trash"></i></button>
+                </div>
+            `;
 
             html += `
             <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
@@ -392,11 +422,59 @@ async function verHistorial(folio) {
                     <br><small class="text-muted"><i class="bi bi-calendar me-1"></i>${pago.fecha} &bull; <i class="bi bi-credit-card me-1"></i>${pago.metodo}</small>
                     <br>${botonPdf}
                 </div>
-                <h5 class="mb-0 fw-bold ${colorMonto}">${signo}$${pago.monto}</h5>
+                <div class="text-end">
+                    <h5 class="mb-0 fw-bold ${colorMonto}">${signo}$${pago.monto}</h5>
+                    ${botonesAccion}
+                </div>
             </li>`;
         });
     }
     document.getElementById('lista-historial').innerHTML = html;
+}
+
+function abrirEditarPago(tipo, fila, folio, concepto, monto, metodo) {
+    document.getElementById('epagoTipo').value = tipo;
+    document.getElementById('epagoFila').value = fila;
+    document.getElementById('epagoFolio').value = folio;
+    document.getElementById('epagoConcepto').value = concepto;
+    document.getElementById('epagoMonto').value = monto;
+    document.getElementById('epagoMetodo').value = metodo;
+    
+    const modal = new bootstrap.Modal(document.getElementById('modalEditarPago'));
+    modal.show();
+}
+
+async function guardarEdicionPago(e) {
+    e.preventDefault();
+    const payload = {
+        tipo: document.getElementById('epagoTipo').value,
+        fila: document.getElementById('epagoFila').value,
+        folio: document.getElementById('epagoFolio').value,
+        concepto: document.getElementById('epagoConcepto').value,
+        monto: document.getElementById('epagoMonto').value,
+        metodo: document.getElementById('epagoMetodo').value
+    };
+    
+    const res = await enviarPost('editarPago', payload);
+    if (res && res.success) {
+        bootstrap.Modal.getInstance(document.getElementById('modalEditarPago')).hide();
+        verHistorial(payload.folio); 
+        cargarDatos(); 
+    } else {
+        alert('Error al actualizar pago.');
+    }
+}
+
+async function eliminarPagoRegistro(tipo, fila, folio) {
+    if (confirm('¿Estás seguro de que deseas eliminar este pago? Los saldos se recalcularán automáticamente.')) {
+        const res = await enviarPost('eliminarPago', { tipo: tipo, fila: fila, folio: folio });
+        if (res && res.success) {
+            verHistorial(folio);
+            cargarDatos();
+        } else {
+            alert('Error al eliminar pago.');
+        }
+    }
 }
 
 function generarTicketPdf(folio, cliente, concepto, monto, metodo, fecha) {
