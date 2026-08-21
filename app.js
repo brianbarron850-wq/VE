@@ -36,7 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// Helper para convertir fechas HTML YYYY-MM-DD a DD/MM/AAAA para enviarlas limpias
 function formatoFechaLimpia(strFecha) {
     if (!strFecha) return "";
     if (strFecha.includes('T')) strFecha = strFecha.split('T')[0];
@@ -49,7 +48,6 @@ function formatoFechaLimpia(strFecha) {
     return strFecha;
 }
 
-// Convertir DD/MM/AAAA a YYYY-MM-DD para cargar inputs date de HTML
 function formatoParaInputDate(strFecha) {
     if (!strFecha) return "";
     let partes = strFecha.split('/');
@@ -106,7 +104,6 @@ function cerrarSesion() {
 
 async function cargarDatos() {
     try {
-        // Cargar Resumen
         const resResumen = await fetch(`${API_URL}?action=getResumen`);
         const dataResumen = await resResumen.json();
         
@@ -149,7 +146,6 @@ async function cargarDatos() {
             </div>
         `;
 
-        // Cargar Viajes
         const resViajes = await fetch(`${API_URL}?action=getViajes`);
         const dataViajes = await resViajes.json();
         viajesData = dataViajes.data || [];
@@ -162,7 +158,6 @@ async function cargarDatos() {
             let fCliente = v.fechaCliente ? v.fechaCliente : '-';
             let fProv = v.fechaProveedor ? v.fechaProveedor : '-';
             
-            // Fila de tabla
             let fila = `
                 <tr class="clickable-row" ondblclick="verHistorial('${v.folio}')">
                     <td class="fw-bold" style="color: var(--ve-teal);">${v.folio}</td>
@@ -234,10 +229,7 @@ async function cargarProveedores() {
         }
         
         document.getElementById('tabla-proveedores').innerHTML = htmlTabla;
-        
-        // Llenar selects de proveedores en los modales de viaje
-        const selectsProv = document.querySelectorAll('.select-proveedor');
-        selectsProv.forEach(select => select.innerHTML = htmlSelect);
+        document.querySelectorAll('.select-proveedor').forEach(select => select.innerHTML = htmlSelect);
 
     } catch(e) {
         console.error("Error cargando proveedores:", e);
@@ -276,24 +268,32 @@ async function guardarEdicionViaje(e) {
         fechaProveedor: formatoFechaLimpia(document.getElementById('eFechaP').value)
     };
 
-    await enviarPost('editarViaje', payload);
-    alert('Viaje actualizado correctamente.');
-    location.reload();
+    const res = await enviarPost('editarViaje', payload);
+    if (res && res.success) {
+        alert('Viaje actualizado correctamente.');
+        location.reload();
+    } else {
+        alert('Error al actualizar viaje: ' + (res && res.error ? res.error : 'Ocurrió un error.'));
+    }
 }
 
 async function cancelarRegistroViaje(folio) {
     if (confirm(`¿Estás seguro de que deseas CANCELAR el viaje con folio ${folio}?`)) {
-        await enviarPost('cancelarViaje', { folio: folio });
-        alert('Viaje marcado como cancelado.');
-        location.reload();
+        const res = await enviarPost('cancelarViaje', { folio: folio });
+        if (res && res.success) {
+            alert('Viaje marcado como cancelado.');
+            location.reload();
+        }
     }
 }
 
 async function eliminarRegistroViaje(folio) {
     if (confirm(`¿Estás seguro de que deseas ELIMINAR permanentemente el viaje con folio ${folio}?`)) {
-        await enviarPost('eliminarViaje', { folio: folio });
-        alert('Registro eliminado.');
-        location.reload();
+        const res = await enviarPost('eliminarViaje', { folio: folio });
+        if (res && res.success) {
+            alert('Registro eliminado.');
+            location.reload();
+        }
     }
 }
 
@@ -306,9 +306,14 @@ async function guardarNuevoProveedor(e) {
         telefono: document.getElementById('pTelefono').value,
         correo: document.getElementById('pCorreo').value
     };
-    await enviarPost('nuevoProveedor', payload);
-    alert('Proveedor guardado exitosamente.');
-    location.reload();
+    
+    const res = await enviarPost('nuevoProveedor', payload);
+    if (res && res.success) {
+        alert('Proveedor guardado exitosamente en la base de datos.');
+        location.reload();
+    } else {
+        alert('Error al guardar el proveedor: ' + (res && res.error ? res.error : 'Ocurrió un problema de conexión.'));
+    }
 }
 
 function abrirEditarProveedor(id) {
@@ -332,19 +337,25 @@ async function guardarEdicionProveedor(e) {
         telefono: document.getElementById('epTelefono').value,
         correo: document.getElementById('epCorreo').value
     };
-    await enviarPost('editarProveedor', payload);
-    alert('Proveedor actualizado.');
-    location.reload();
+    
+    const res = await enviarPost('editarProveedor', payload);
+    if (res && res.success) {
+        alert('Proveedor actualizado correctamente.');
+        location.reload();
+    } else {
+        alert('Error al actualizar proveedor: ' + (res && res.error ? res.error : 'Ocurrió un problema.'));
+    }
 }
 
 async function eliminarProveedor(id) {
     if (confirm(`¿Deseas eliminar a este proveedor?`)) {
-        await enviarPost('eliminarProveedor', { id: id });
-        alert('Proveedor eliminado.');
-        location.reload();
+        const res = await enviarPost('eliminarProveedor', { id: id });
+        if (res && res.success) {
+            alert('Proveedor eliminado.');
+            location.reload();
+        }
     }
 }
-
 
 // --- HISTORIAL Y TICKET PDF BRANDED (VANIA ESCAPES) ---
 
@@ -368,7 +379,6 @@ async function verHistorial(folio) {
             let bgEtiqueta = esCliente ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-dark';
             let signo = esCliente ? '+' : '-';
             
-            // Botón PDF exclusivo de pagos del cliente
             let botonPdf = esCliente ? 
                 `<button class="btn btn-sm btn-outline-primary mt-2" onclick="generarTicketPdf('${pago.folio}', '${pago.cliente}', '${pago.concepto}', '${pago.monto}', '${pago.metodo}', '${pago.fecha}')">
                     <i class="bi bi-file-earmark-pdf me-1"></i> Ver Ticket PDF
@@ -442,7 +452,6 @@ function generarTicketPdf(folio, cliente, concepto, monto, metodo, fecha) {
         <body>
             <div class="ticket-card">
                 <div class="header">
-                    <!-- LOGO EN TICKET PDF -->
                     <div style="display:flex; justify-content:center; margin-bottom: 15px;">
                         <img src="https://lh3.googleusercontent.com/d/1ApOiGW9GcvtP__t9hXkl7OSjrzF_Hwt1" alt="Vania Escapes Logo" style="width: 120px; border-radius: 8px;">
                     </div>
@@ -502,9 +511,11 @@ async function guardarNuevoViaje(e) {
         fechaCliente: formatoFechaLimpia(document.getElementById('vFechaC').value),
         fechaProveedor: formatoFechaLimpia(document.getElementById('vFechaP').value)
     };
-    await enviarPost('nuevoViaje', payload);
-    alert('Viaje guardado exitosamente.');
-    location.reload(); 
+    const res = await enviarPost('nuevoViaje', payload);
+    if (res && res.success) {
+        alert('Viaje guardado exitosamente.');
+        location.reload(); 
+    }
 }
 
 async function guardarPagoCliente(e) {
@@ -516,9 +527,11 @@ async function guardarPagoCliente(e) {
         concepto: document.getElementById('cobroConcepto').value,
         metodo: document.getElementById('cobroMetodo').value
     };
-    await enviarPost('pagoCliente', payload);
-    alert('Cobro registrado correctamente.');
-    location.reload();
+    const res = await enviarPost('pagoCliente', payload);
+    if (res && res.success) {
+        alert('Cobro registrado correctamente.');
+        location.reload();
+    }
 }
 
 async function guardarPagoProveedor(e) {
@@ -530,7 +543,9 @@ async function guardarPagoProveedor(e) {
         concepto: document.getElementById('provConcepto').value,
         metodo: document.getElementById('provMetodo').value
     };
-    await enviarPost('pagoProveedor', payload);
-    alert('Pago a proveedor registrado.');
-    location.reload();
+    const res = await enviarPost('pagoProveedor', payload);
+    if (res && res.success) {
+        alert('Pago a proveedor registrado.');
+        location.reload();
+    }
 }
