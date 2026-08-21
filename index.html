@@ -252,7 +252,7 @@
             
             <!-- Pestaña: Control de Pagos PENDIENTES -->
             <div class="tab-pane fade show active" id="viajes" role="tabpanel">
-                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                     <h4 class="fw-bold mb-0 brand-font" style="color: var(--ve-teal-dark);">
                         <i class="bi bi-journal-bookmark me-2" style="color: var(--ve-sand);"></i>Registros de Viajes Pendientes
                     </h4>
@@ -261,6 +261,10 @@
                     </button>
                 </div>
                 
+                <div class="mb-4">
+                    <input type="text" id="buscarPendientes" class="form-control bg-light" placeholder="🔍 Buscar por folio, cliente o destino...">
+                </div>
+
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead>
@@ -288,11 +292,16 @@
 
             <!-- Pestaña: Viajes Completados -->
             <div class="tab-pane fade" id="completados" role="tabpanel">
-                <div class="mb-4">
+                <div class="mb-3">
                     <h4 class="fw-bold mb-0 brand-font" style="color: var(--ve-teal-dark);">
                         <i class="bi bi-archive me-2" style="color: var(--ve-sand);"></i>Viajes Completados y Cancelados
                     </h4>
                 </div>
+                
+                <div class="mb-4">
+                    <input type="text" id="buscarCompletados" class="form-control bg-light" placeholder="🔍 Buscar por folio, cliente o destino...">
+                </div>
+
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead>
@@ -399,7 +408,7 @@
             
             <!-- Pestaña: Proveedores -->
             <div class="tab-pane fade" id="proveedores" role="tabpanel">
-                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                     <h4 class="fw-bold mb-0 brand-font" style="color: var(--ve-teal-dark);">
                         <i class="bi bi-people me-2" style="color: var(--ve-sand);"></i>Directorio de Proveedores
                     </h4>
@@ -408,6 +417,10 @@
                     </button>
                 </div>
                 
+                <div class="mb-4">
+                    <input type="text" id="buscarProveedores" class="form-control bg-light" placeholder="🔍 Buscar proveedor por nombre o contacto...">
+                </div>
+
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead>
@@ -548,6 +561,41 @@
             <div class="col-12"><label class="form-label text-muted small mb-1">Teléfono</label><input type="text" id="epTelefono" class="form-control"></div>
             <div class="col-12"><label class="form-label text-muted small mb-1">Correo Electrónico</label><input type="email" id="epCorreo" class="form-control"></div>
             <div class="col-12 mt-4"><button type="submit" class="btn btn-ve-sand w-100 py-2.5"><i class="bi bi-save me-2"></i>Guardar Cambios</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Pago -->
+<div class="modal fade" id="modalEditarPago" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg">
+      <div class="modal-header pt-4 px-4">
+        <h5 class="modal-title fw-bold brand-font" style="color: var(--ve-teal-dark);">
+            <i class="bi bi-pencil me-2" style="color: var(--ve-sand);"></i>Editar Pago
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="formEditarPago" class="row g-3">
+            <input type="hidden" id="epagoFila">
+            <input type="hidden" id="epagoTipo">
+            <input type="hidden" id="epagoFolio">
+            <div class="col-12"><label class="form-label text-muted small mb-1">Concepto</label><input type="text" id="epagoConcepto" class="form-control" required></div>
+            <div class="col-12"><label class="form-label text-muted small mb-1">Monto</label>
+                <div class="input-group"><span class="input-group-text">$</span><input type="number" id="epagoMonto" class="form-control" required></div>
+            </div>
+            <div class="col-12"><label class="form-label text-muted small mb-1">Método de Pago</label>
+                <select class="form-select" id="epagoMetodo">
+                    <option>Transferencia SPEI</option>
+                    <option>Efectivo</option>
+                    <option>Tarjeta de Crédito</option>
+                    <option>Tarjeta de Débito</option>
+                    <option>Tarjeta corporativa</option>
+                </select>
+            </div>
+            <div class="col-12 mt-4"><button type="submit" class="btn btn-ve-primary w-100 py-2.5"><i class="bi bi-save me-2"></i>Guardar Cambios de Pago</button></div>
         </form>
       </div>
     </div>
