@@ -18,22 +18,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('formEditarViaje').addEventListener('submit', guardarEdicionViaje);
     document.getElementById('formCobro').addEventListener('submit', guardarPagoCliente);
     document.getElementById('formPagoProv').addEventListener('submit', guardarPagoProveedor);
-    document.getElementById('formEditarPago').addEventListener('submit', guardarEdicionPago);
     
     // Event Listeners para Proveedores
     document.getElementById('formNuevoProveedor').addEventListener('submit', guardarNuevoProveedor);
     document.getElementById('formEditarProveedor').addEventListener('submit', guardarEdicionProveedor);
-
-    // Buscadores (Filtros)
-    document.getElementById('buscarPendientes').addEventListener('input', function() {
-        filtrarTabla('tabla-viajes', this.value);
-    });
-    document.getElementById('buscarCompletados').addEventListener('input', function() {
-        filtrarTabla('tabla-viajes-completados', this.value);
-    });
-    document.getElementById('buscarProveedores').addEventListener('input', function() {
-        filtrarTabla('tabla-proveedores', this.value);
-    });
 
     // Auto-completar cliente al seleccionar folio
     document.querySelectorAll('.select-folios').forEach(select => {
@@ -48,16 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// --- LÓGICA DE FILTRADO ---
-function filtrarTabla(idTabla, texto) {
-    const filas = document.getElementById(idTabla).getElementsByTagName('tr');
-    const filtro = texto.toLowerCase();
-    for (let i = 0; i < filas.length; i++) {
-        const contenido = filas[i].textContent.toLowerCase();
-        filas[i].style.display = contenido.includes(filtro) ? '' : 'none';
-    }
-}
-
+// Forzamos explícitamente Día/Mes/Año (dd/MM/yyyy)
 function formatoFechaLimpia(strFecha) {
     if (!strFecha) return "";
     if (strFecha.includes('T')) strFecha = strFecha.split('T')[0];
@@ -126,6 +105,7 @@ function cerrarSesion() {
 
 async function cargarDatos() {
     try {
+        // Cargar Resumen Financiero Básico
         const resResumen = await fetch(`${API_URL}?action=getResumen`);
         const dataResumen = await resResumen.json();
         
@@ -168,6 +148,38 @@ async function cargarDatos() {
             </div>
         `;
 
+        // Cargar Información del Dashboard Interactivo (Gráficos)
+        const resDash = await fetch(`${API_URL}?action=getDashboardData`);
+        const dataDash = await resDash.json();
+        
+        document.getElementById('dashRentabilidad').innerText = '$' + (dataDash.rentabilidad || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        
+        const ctx = document.getElementById('chartDestinos').getContext('2d');
+        if(window.graficaDestinos) window.graficaDestinos.destroy(); // Previene gráficos duplicados si se recarga
+        
+        const etiquetasDestinos = Object.keys(dataDash.destinos || {});
+        const valoresDestinos = Object.values(dataDash.destinos || {});
+        
+        window.graficaDestinos = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: etiquetasDestinos.length > 0 ? etiquetasDestinos : ['Sin Datos'],
+                datasets: [{
+                    data: valoresDestinos.length > 0 ? valoresDestinos : [1],
+                    backgroundColor: ['#5B8A88', '#2D4341', '#C5AA83', '#7A9F9C', '#E8DCB8', '#D8D3C8'],
+                    borderWidth: 0
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right' }
+                }
+            }
+        });
+
+        // Cargar Tabla de Viajes
         const resViajes = await fetch(`${API_URL}?action=getViajes`);
         const dataViajes = await resViajes.json();
         viajesData = dataViajes.data || [];
@@ -379,7 +391,7 @@ async function eliminarProveedor(id) {
     }
 }
 
-// --- HISTORIAL, EDICIÓN DE PAGOS Y TICKET PDF ---
+// --- HISTORIAL Y TICKET PDF BRANDED (VANIA ESCAPES) ---
 
 async function verHistorial(folio) {
     document.getElementById('historialFolioText').innerText = folio;
@@ -401,18 +413,13 @@ async function verHistorial(folio) {
             let bgEtiqueta = esCliente ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-dark';
             let signo = esCliente ? '+' : '-';
             
-            let botonPdf = esCliente ? 
-                `<button class="btn btn-sm btn-outline-primary mt-2 me-1" onclick="generarTicketPdf('${pago.folio}', '${pago.cliente}', '${pago.concepto}', '${pago.monto}', '${pago.metodo}', '${pago.fecha}')">
+            // Mandamos saldo pendiente al ticket
+            let saldoRestante = esCliente ? data.faltaPagar : data.saldoProveedor;
+            
+            let botonPdf =  
+                `<button class="btn btn-sm btn-outline-primary mt-2" onclick="generarTicketPdf('${pago.folio}', '${pago.cliente}', '${pago.concepto}', '${pago.monto}', '${pago.metodo}', '${pago.fecha}', '${pago.tipo}', '${saldoRestante}')">
                     <i class="bi bi-file-earmark-pdf me-1"></i> Ver Ticket PDF
-                </button>` : '';
-
-            // Botones añadidos para editar o eliminar pago
-            let botonesAccion = `
-                <div class="mt-2 text-end">
-                    <button class="btn btn-sm btn-outline-warning py-0 px-2 me-1" onclick="abrirEditarPago('${pago.tipo}', ${pago.fila}, '${pago.folio}', '${pago.concepto}', ${pago.monto}, '${pago.metodo}')" title="Editar Pago"><i class="bi bi-pencil"></i></button>
-                    <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="eliminarPagoRegistro('${pago.tipo}', ${pago.fila}, '${pago.folio}')" title="Eliminar Pago"><i class="bi bi-trash"></i></button>
-                </div>
-            `;
+                </button>`;
 
             html += `
             <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
@@ -422,68 +429,23 @@ async function verHistorial(folio) {
                     <br><small class="text-muted"><i class="bi bi-calendar me-1"></i>${pago.fecha} &bull; <i class="bi bi-credit-card me-1"></i>${pago.metodo}</small>
                     <br>${botonPdf}
                 </div>
-                <div class="text-end">
-                    <h5 class="mb-0 fw-bold ${colorMonto}">${signo}$${pago.monto}</h5>
-                    ${botonesAccion}
-                </div>
+                <h5 class="mb-0 fw-bold ${colorMonto}">${signo}$${pago.monto}</h5>
             </li>`;
         });
     }
     document.getElementById('lista-historial').innerHTML = html;
 }
 
-function abrirEditarPago(tipo, fila, folio, concepto, monto, metodo) {
-    document.getElementById('epagoTipo').value = tipo;
-    document.getElementById('epagoFila').value = fila;
-    document.getElementById('epagoFolio').value = folio;
-    document.getElementById('epagoConcepto').value = concepto;
-    document.getElementById('epagoMonto').value = monto;
-    document.getElementById('epagoMetodo').value = metodo;
-    
-    const modal = new bootstrap.Modal(document.getElementById('modalEditarPago'));
-    modal.show();
-}
+function generarTicketPdf(folio, cliente, concepto, monto, metodo, fecha, tipo, saldoRestante) {
+    let tituloComprobante = tipo === 'Cliente' ? 'Comprobante de Pago Oficial' : 'Comprobante de Pago a Proveedor';
+    let labelFaltante = tipo === 'Cliente' ? 'Saldo Pendiente Cliente:' : 'Saldo Pendiente Proveedor:';
 
-async function guardarEdicionPago(e) {
-    e.preventDefault();
-    const payload = {
-        tipo: document.getElementById('epagoTipo').value,
-        fila: document.getElementById('epagoFila').value,
-        folio: document.getElementById('epagoFolio').value,
-        concepto: document.getElementById('epagoConcepto').value,
-        monto: document.getElementById('epagoMonto').value,
-        metodo: document.getElementById('epagoMetodo').value
-    };
-    
-    const res = await enviarPost('editarPago', payload);
-    if (res && res.success) {
-        bootstrap.Modal.getInstance(document.getElementById('modalEditarPago')).hide();
-        verHistorial(payload.folio); 
-        cargarDatos(); 
-    } else {
-        alert('Error al actualizar pago.');
-    }
-}
-
-async function eliminarPagoRegistro(tipo, fila, folio) {
-    if (confirm('¿Estás seguro de que deseas eliminar este pago? Los saldos se recalcularán automáticamente.')) {
-        const res = await enviarPost('eliminarPago', { tipo: tipo, fila: fila, folio: folio });
-        if (res && res.success) {
-            verHistorial(folio);
-            cargarDatos();
-        } else {
-            alert('Error al eliminar pago.');
-        }
-    }
-}
-
-function generarTicketPdf(folio, cliente, concepto, monto, metodo, fecha) {
     const ventana = window.open('', '_blank');
     ventana.document.write(`
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Comprobante de Pago - ${folio}</title>
+            <title>${tituloComprobante} - ${folio}</title>
             <style>
                 body { 
                     font-family: 'Helvetica Neue', Arial, sans-serif; 
@@ -536,17 +498,22 @@ function generarTicketPdf(folio, cliente, concepto, monto, metodo, fecha) {
                     
                     <div class="brand-title">VANIA ESCAPES</div>
                     <div class="tagline">TU VIAJE SEGURO, TU MENTE TRANQUILA</div>
-                    <div class="subtitle">Comprobante Oficial de Pago</div>
+                    <div class="subtitle">${tituloComprobante}</div>
                 </div>
 
                 <div class="row"><span class="label">Folio del Viaje:</span><span class="value">${folio}</span></div>
                 <div class="row"><span class="label">Fecha de Pago:</span><span class="value">${fecha}</span></div>
-                <div class="row"><span class="label">Cliente:</span><span class="value">${cliente}</span></div>
+                <div class="row"><span class="label">Cliente Referencia:</span><span class="value">${cliente}</span></div>
                 <div class="row"><span class="label">Concepto:</span><span class="value">${concepto}</span></div>
                 <div class="row"><span class="label">Método de Pago:</span><span class="value">${metodo}</span></div>
                 
+                <hr style="border: 0; border-top: 1px solid #E8DCB8; margin: 20px 0;">
+                
+                <!-- Agregado de saldo restante en ambos tickets -->
+                <div class="row"><span class="label">${labelFaltante}</span><span class="value" style="color: #d9534f; font-size: 16px;">$${saldoRestante}</span></div>
+                
                 <div class="total-box">
-                    <div class="total-title">Monto Recibido</div>
+                    <div class="total-title">Monto de esta transacción</div>
                     <div class="total-amount">$${monto}</div>
                 </div>
 
