@@ -109,8 +109,8 @@ function cerrarSesion() {
 
 async function cargarDatos() {
     try {
-        // Cargar Resumen Financiero Básico
-        const resResumen = await fetch(`${API_URL}?action=getResumen`);
+        // Cargar Resumen Financiero Básico (añadimos timestamp anti-caché)
+        const resResumen = await fetch(`${API_URL}?action=getResumen&t=${new Date().getTime()}`);
         const dataResumen = await resResumen.json();
         
         document.getElementById('dashboard-resumen').innerHTML = `
@@ -152,17 +152,30 @@ async function cargarDatos() {
             </div>
         `;
 
-        // Cargar Información del Dashboard Interactivo (Gráficos)
-        const resDash = await fetch(`${API_URL}?action=getDashboardData`);
-        const dataDash = await resDash.json();
+        // Cargar Tabla de Viajes PRIMERO (Con timestamp anti-caché)
+        const resViajes = await fetch(`${API_URL}?action=getViajes&t=${new Date().getTime()}`);
+        const dataViajes = await resViajes.json();
+        viajesData = dataViajes.data || [];
+
+        // CALCULAMOS EL DASHBOARD LOCALMENTE PARA PREVENIR ERRORES DE DESPLIEGUE DEL BACKEND Y CACHÉ
+        let destinosCalc = {};
+        let rentabilidadCalc = 0;
         
-        document.getElementById('dashRentabilidad').innerText = '$' + (dataDash.rentabilidad || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        viajesData.forEach(v => {
+            if (v.estado !== 'Cancelado') {
+                if (!destinosCalc[v.destino]) destinosCalc[v.destino] = 0;
+                destinosCalc[v.destino] += 1;
+                rentabilidadCalc += (parseFloat(v.totalViaje) - parseFloat(v.costoProveedor || 0));
+            }
+        });
+
+        document.getElementById('dashRentabilidad').innerText = '$' + (rentabilidadCalc || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         
         const ctx = document.getElementById('chartDestinos').getContext('2d');
-        if(window.graficaDestinos) window.graficaDestinos.destroy(); // Previene gráficos duplicados si se recarga
+        if(window.graficaDestinos) window.graficaDestinos.destroy(); // Previene gráficos duplicados
         
-        const etiquetasDestinos = Object.keys(dataDash.destinos || {});
-        const valoresDestinos = Object.values(dataDash.destinos || {});
+        const etiquetasDestinos = Object.keys(destinosCalc);
+        const valoresDestinos = Object.values(destinosCalc);
         
         window.graficaDestinos = new Chart(ctx, {
             type: 'doughnut',
@@ -182,12 +195,8 @@ async function cargarDatos() {
                 }
             }
         });
-
-        // Cargar Tabla de Viajes
-        const resViajes = await fetch(`${API_URL}?action=getViajes`);
-        const dataViajes = await resViajes.json();
-        viajesData = dataViajes.data || [];
         
+        // Renderizado de las Tablas de Viajes
         let htmlPendientes = '';
         let htmlCompletados = '';
         let htmlOpciones = '<option value="">Selecciona un folio...</option>';
@@ -241,7 +250,7 @@ async function cargarDatos() {
 
 async function cargarProveedores() {
     try {
-        const res = await fetch(`${API_URL}?action=getProveedores`);
+        const res = await fetch(`${API_URL}?action=getProveedores&t=${new Date().getTime()}`);
         const data = await res.json();
         proveedoresData = data.data || [];
         
@@ -404,7 +413,7 @@ async function verHistorial(folio) {
 
     document.getElementById('lista-historial').innerHTML = '<li class="list-group-item p-4 text-center"><div class="spinner-border text-success" role="status"></div><br>Cargando movimientos...</li>';
     
-    const res = await fetch(`${API_URL}?action=getHistorial&id=${folio}`);
+    const res = await fetch(`${API_URL}?action=getHistorial&id=${folio}&t=${new Date().getTime()}`);
     const data = await res.json();
     
     let html = '';
