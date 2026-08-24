@@ -10,6 +10,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Chart.js para Dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --ve-teal: #5B8A88;
@@ -222,7 +224,12 @@
         <!-- Pestañas de Navegación -->
         <ul class="nav nav-tabs flex-wrap" id="myTab" role="tablist">
           <li class="nav-item" role="presentation">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#viajes" type="button" role="tab">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab">
+                <i class="bi bi-bar-chart-fill me-2"></i>Dashboard
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#viajes" type="button" role="tab">
                 <i class="bi bi-compass me-2"></i>Control de Viajes (Pendientes)
             </button>
           </li>
@@ -250,9 +257,31 @@
 
         <div class="tab-content p-4 p-md-5 mb-5">
             
+            <!-- Pestaña: Dashboard Interactivo -->
+            <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
+                <h4 class="fw-bold mb-4 brand-font" style="color: var(--ve-teal-dark);">
+                    <i class="bi bi-pie-chart me-2" style="color: var(--ve-sand);"></i>Métricas y Rentabilidad
+                </h4>
+                <div class="row">
+                     <div class="col-md-6 mb-4">
+                         <div class="card p-3 shadow-sm border-0 h-100" style="border-radius: 16px;">
+                             <h6 class="text-muted fw-bold mb-3 text-center">Destinos más solicitados</h6>
+                             <canvas id="chartDestinos" style="max-height: 300px;"></canvas>
+                         </div>
+                     </div>
+                     <div class="col-md-6 mb-4">
+                         <div class="card p-4 shadow-sm border-0 h-100 d-flex flex-column justify-content-center align-items-center text-center" style="border-radius: 16px; background: linear-gradient(135deg, #F7F5F0, #E8DCB8);">
+                             <h6 class="text-muted fw-bold mb-2 text-uppercase" style="letter-spacing: 1px;">Rentabilidad Bruta Estimada</h6>
+                             <h1 class="fw-bold mt-2" style="color: var(--ve-teal-dark); font-size: 3.5rem;" id="dashRentabilidad">$0</h1>
+                             <p class="text-muted small mt-3 px-3">Ganancia neta proyectada (Ventas totales - Costos de proveedor) sobre los viajes que no han sido cancelados.</p>
+                         </div>
+                     </div>
+                </div>
+            </div>
+
             <!-- Pestaña: Control de Pagos PENDIENTES -->
-            <div class="tab-pane fade show active" id="viajes" role="tabpanel">
-                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div class="tab-pane fade" id="viajes" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                     <h4 class="fw-bold mb-0 brand-font" style="color: var(--ve-teal-dark);">
                         <i class="bi bi-journal-bookmark me-2" style="color: var(--ve-sand);"></i>Registros de Viajes Pendientes
                     </h4>
@@ -261,10 +290,6 @@
                     </button>
                 </div>
                 
-                <div class="mb-4">
-                    <input type="text" id="buscarPendientes" class="form-control bg-light" placeholder="🔍 Buscar por folio, cliente o destino...">
-                </div>
-
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead>
@@ -292,16 +317,11 @@
 
             <!-- Pestaña: Viajes Completados -->
             <div class="tab-pane fade" id="completados" role="tabpanel">
-                <div class="mb-3">
+                <div class="mb-4">
                     <h4 class="fw-bold mb-0 brand-font" style="color: var(--ve-teal-dark);">
                         <i class="bi bi-archive me-2" style="color: var(--ve-sand);"></i>Viajes Completados y Cancelados
                     </h4>
                 </div>
-                
-                <div class="mb-4">
-                    <input type="text" id="buscarCompletados" class="form-control bg-light" placeholder="🔍 Buscar por folio, cliente o destino...">
-                </div>
-
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead>
@@ -408,7 +428,7 @@
             
             <!-- Pestaña: Proveedores -->
             <div class="tab-pane fade" id="proveedores" role="tabpanel">
-                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                     <h4 class="fw-bold mb-0 brand-font" style="color: var(--ve-teal-dark);">
                         <i class="bi bi-people me-2" style="color: var(--ve-sand);"></i>Directorio de Proveedores
                     </h4>
@@ -417,10 +437,6 @@
                     </button>
                 </div>
                 
-                <div class="mb-4">
-                    <input type="text" id="buscarProveedores" class="form-control bg-light" placeholder="🔍 Buscar proveedor por nombre o contacto...">
-                </div>
-
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead>
@@ -561,41 +577,6 @@
             <div class="col-12"><label class="form-label text-muted small mb-1">Teléfono</label><input type="text" id="epTelefono" class="form-control"></div>
             <div class="col-12"><label class="form-label text-muted small mb-1">Correo Electrónico</label><input type="email" id="epCorreo" class="form-control"></div>
             <div class="col-12 mt-4"><button type="submit" class="btn btn-ve-sand w-100 py-2.5"><i class="bi bi-save me-2"></i>Guardar Cambios</button></div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Editar Pago -->
-<div class="modal fade" id="modalEditarPago" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content shadow-lg">
-      <div class="modal-header pt-4 px-4">
-        <h5 class="modal-title fw-bold brand-font" style="color: var(--ve-teal-dark);">
-            <i class="bi bi-pencil me-2" style="color: var(--ve-sand);"></i>Editar Pago
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body p-4">
-        <form id="formEditarPago" class="row g-3">
-            <input type="hidden" id="epagoFila">
-            <input type="hidden" id="epagoTipo">
-            <input type="hidden" id="epagoFolio">
-            <div class="col-12"><label class="form-label text-muted small mb-1">Concepto</label><input type="text" id="epagoConcepto" class="form-control" required></div>
-            <div class="col-12"><label class="form-label text-muted small mb-1">Monto</label>
-                <div class="input-group"><span class="input-group-text">$</span><input type="number" id="epagoMonto" class="form-control" required></div>
-            </div>
-            <div class="col-12"><label class="form-label text-muted small mb-1">Método de Pago</label>
-                <select class="form-select" id="epagoMetodo">
-                    <option>Transferencia SPEI</option>
-                    <option>Efectivo</option>
-                    <option>Tarjeta de Crédito</option>
-                    <option>Tarjeta de Débito</option>
-                    <option>Tarjeta corporativa</option>
-                </select>
-            </div>
-            <div class="col-12 mt-4"><button type="submit" class="btn btn-ve-primary w-100 py-2.5"><i class="bi bi-save me-2"></i>Guardar Cambios de Pago</button></div>
         </form>
       </div>
     </div>
