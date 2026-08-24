@@ -40,11 +40,15 @@ document.addEventListener("DOMContentLoaded", () => {
 function formatoFechaLimpia(strFecha) {
     if (!strFecha) return "";
     if (strFecha.includes('T')) strFecha = strFecha.split('T')[0];
-    if (strFecha.includes(' ')) strFecha = strFecha.split(' ')[0];
+    
+    // Solo cortamos por espacio si la fecha no trae letras (evita cortar strings de fecha largos de JS)
+    if (strFecha.includes(' ') && !/[a-zA-Z]/.test(strFecha)) {
+        strFecha = strFecha.split(' ')[0];
+    }
     
     let partes = strFecha.split('-');
     if (partes.length === 3 && partes[0].length === 4) {
-        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        return `${partes[2].padStart(2,'0')}/${partes[1].padStart(2,'0')}/${partes[0]}`;
     }
     return strFecha;
 }
